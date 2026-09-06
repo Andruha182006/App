@@ -15,7 +15,7 @@ class StudentRepository(CRUDBase[Student]):
         query = select(self.model).where(self.model.name == name).offset(skip).limit(limit)
         return list(db.scalars(query).all())
 
-    def get_by_department(self,db:Session,age:int,skip: int = 0,limit:int = 100) -> list[Student]:
+    def get_by_age(self,db:Session,age:int,skip: int = 0,limit:int = 100) -> list[Student]:
         query = select(self.model).where(self.model.age == age ).offset(skip).limit(limit)
         return list(db.scalars(query).all())
 
