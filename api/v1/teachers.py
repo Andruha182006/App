@@ -1,7 +1,10 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException,status,Depends
 from schemas.teachers import *
+from core.database import get_db
+from repository.teachers import teacher_rep
+fro
 
-router = APIRouter()
+router = APIRouter(prefix='/teachers',tags=['Teachers'])
 teachers = {}
 
 @router.get('/teachers/{teacher_id}',tags=['Teachers'])
