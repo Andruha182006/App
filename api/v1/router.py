@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from api.v1.students import router as students_router
-from api.v1.teacher import router as teacher_router
+from api.v1.teachers import router as teacher_router
 from api.v1.courses import router as courses_router
 from api.v1.tasks import router as tasks_router
 from api.v1.schedules import router as schedules_router
