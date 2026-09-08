@@ -34,7 +34,7 @@ class CRUDBase(Generic[ModelType]):
         db.refresh(db_obj)
         return db_obj
 
-    def delete(self,db:Session,id:int) -> bool:
+    def delete(self,db:Session, id:int) -> bool:
         obj = self.get_by_id(db,id)
         if not obj:
             return False
