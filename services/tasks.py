@@ -26,3 +26,5 @@ class TaskService(ServiceBase[Task,TaskUpdate,TaskCreate]):
         if not tasks:
             raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__} with teacher{teacher_id} not found')
         return tasks
+
+task_service = TaskService()

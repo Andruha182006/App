@@ -31,3 +31,5 @@ class CourseService(ServiceBase[Course,CoursesUpdate,CoursesCreate]):
         if not courses:
             raise HTTPException(status_code=404,detail=(f'{self.repository.model.__name__} with teacher{teacher_id} not found'))
         return courses
+
+course_service =CourseService()
