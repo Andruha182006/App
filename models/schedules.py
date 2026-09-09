@@ -1,8 +1,5 @@
 from sqlalchemy import String,ForeignKey
-from sqlalchemy.orm import Mapped,mapped_column
-
-from api.v1.courses import courses
-from api.v1.teachers import teachers
+from sqlalchemy.orm import Mapped,mapped_column,relationship
 from core.database import Base
 
 class Schedule(Base):
@@ -11,5 +8,8 @@ class Schedule(Base):
     id: Mapped[int]=mapped_column(primary_key=True,unique=True)
     group:Mapped[str]=mapped_column(String(50))
     room:Mapped[int]=mapped_column()
-    course_id:Mapped[int]=mapped_column(ForeignKey(courses.id),nullable=False)
-    teacher_id:Mapped[int]=mapped_column(ForeignKey(teachers.id),nullable=False)
+    course_id:Mapped[int]=mapped_column(ForeignKey('courses.id'),nullable=False)
+    teacher_id:Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
+
+    course = relationship("Course", back_populates="schedules")
+    teacher = relationship("Teacher", back_populates="schedules")

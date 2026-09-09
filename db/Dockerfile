@@ -1,0 +1,4 @@
+FROM postgres:16-alpine
+ENV POSTGRES_USER=postgres
+ENV POSTRES_DB=my_db
+EXPOSE 5432

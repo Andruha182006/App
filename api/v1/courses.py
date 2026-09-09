@@ -1,66 +1,36 @@
-from fastapi import APIRouter,HTTPException
-from schemas.courses import*
+from fastapi import APIRouter,Depends,status
+from schemas.courses import CourseResponse,CourseFilter,CoursesUpdate,CoursesCreate
 
-router = APIRouter()
+from sqlalchemy.orm import Session
+from core.database import get_db
+from services.courses import course_service
 
-courses = {}
+router = APIRouter(prefix='/courses',tags=['Courses'])
 
-@router.post('/courses',tags=['Courses'])
-def create_course(data:CoursesSchema):
-    courser_id = len(courses)+1
-    courses[courser_id] = {
-        'courser_id':courser_id,
-        'name': data.name,
-        'credits':data.credits,
-        'teacher_id':data.teacher_id
-    }
-    return courses[courser_id]
+@router.post('/',response_model=CourseResponse,status_code=status.HTTP_201_CREATED)
+def create_course(data:CoursesCreate,db:Session = Depends(get_db)):
+    return course_service.create(db,obj_in=data)
 
-@router.get('/courses/{courser_id}',tags=['Courses'])
-def read_course(courser_id:int):
-    if courser_id in courses:
-        return courses[courser_id]
-    else:
-        raise HTTPException(status_code=404,detail='Course not found')
+@router.get('/',response_model=list[CourseResponse])
+def get_courses(filters:CourseFilter = Depends(),skip:int =0,limit:int =100,db:Session = Depends(get_db)):
+    if filters.name:
+        return course_service.get_by_name(db,name=filters.name,skip=skip,limit=limit)
+    if filters.teacher_id:
+        return course_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
+    if filters.credits:
+        return course_service.get_by_credits(db,credits=filters.credits,skip=skip,limit=limit)
 
-@router.put('/courses/{courser_id}',tags=['Courses'])
-def update_course(courser_id:int,data:CoursesUpdate):
-    if courser_id not in courses:
-        raise HTTPException(status_code=404, detail='Course not found')
-    courses[courser_id] = {
-        'courser_id':courser_id,
-        'name': data.name,
-        'credits': data.credits,
-        'teacher_id': data.teacher_id
-    }
+    return course_service.get_multi(db,skip=skip,limit=limit)
 
-    return courses[courser_id]
+@router.patch('/{courser_id}',response_model=CourseResponse)
+@router.put('/{courser_id}',response_model=CourseResponse)
+def update_course(courser_id:int,data:CoursesUpdate,db:Session = Depends(get_db)):
+    db_obj = course_service.get_by_id(db,id=courser_id)
+    return course_service.update(db,db_obj=db_obj,obj_in=data)
 
-@router.patch('/courses/{courser_id}',tags=['Courses'])
-def patch_course(courser_id:int,data:CoursesUpdate):
-    if courser_id not in courses:
-        raise HTTPException(status_code=404,detail='Course not found')
-    course = courses[courser_id]
-
-    if data.name is not None:
-        course['name'] = data.name
-
-    if data.credits is not None:
-        course['credits'] = data.credits
-
-    if data.teacher_id is not None:
-        course['teacher_id'] = data.teacher_id
-
-    return course
-
-
-@router.delete('/courses/{courser_id}',tags=['Courses'])
-def delete_course(courser_id:int):
-    if courser_id in courses:
-        del courses[courser_id]
-        return {'message':'Course deleted'}
-    else:
-        raise HTTPException(status_code=404,detail='Course not found')
+@router.delete('/{courser_id}',response_model=CourseResponse)
+def delete_course(courser_id:int,db:Session = Depends(get_db)):
+    return course_service.remove(db,id=courser_id)
 
 
 
