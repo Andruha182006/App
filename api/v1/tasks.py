@@ -1,63 +1,36 @@
-from fastapi import APIRouter,HTTPException
-from schemas.tasks import *
+from fastapi import APIRouter,status,Depends
 
-router = APIRouter()
+from core.database import get_db
+from schemas.tasks import TaskResponse,TaskFilter,TaskCreate,TaskUpdate
+from sqlalchemy.orm import Session
+from services.tasks import task_service
 
-tasks = {}
+router = APIRouter(prefix='/tasks',tags=['Tasks'])
 
-@router.post('/tasks',tags=['Tasks'])
-def create_task(data:TaskSchema):
-    task_id = len(tasks)+1
-    tasks[task_id] = {
-        'task_id' : task_id,
-        'title' : data.title,
-        'student_id':data.student_id,
-        'teacher_id':data.teacher_id
-    }
-    return tasks[task_id]
+@router.post('/tasks',response_model=TaskResponse,status_code=status.HTTP_201_CREATED)
+def create_task(data:TaskCreate,db:Session = Depends(get_db)):
+    return task_service.create(db,odj_in=data)
 
-@router.get('/tasks/{task_id}',tags=['Tasks'])
-def read_task(task_id:int):
-    if task_id in tasks:
-        return tasks[task_id]
-    else:
-        raise HTTPException(status_code=404,detail='Task not found')
+@router.get('/{task_id}',response_model=TaskResponse)
+def read_task(filter:TaskFilter = Depends(),db:Session = Depends(get_db),skip:int=0,limit:int=100):
+    if filter.title:
+        return task_service.get_by_title(db,title = filter.title,skip=skip,limit=limit)
+    if filter.student_id:
+        return task_service.get_by_student_id(db,student_id=filter.student_id,skip=skip,limit=limit)
+    if filter.teacher_id:
+        return task_service.get_by_teacher_id(db,teacher_id=filter.teacher_id,skip=skip,limit=limit)
 
-@router.put('/tasks/{task_id}',tags=['Tasks'])
-def update_task(task_id:int,data:TaskUpdate):
-    if task_id not in tasks:
-        raise HTTPException(status_code=404, detail='Task not found')
-    tasks[task_id] = {
-        'task_id': task_id,
-        'title': data.title,
-        'student_id': data.student_id,
-        'teacher_id': data.teacher_id
-    }
-    return tasks[task_id]
+    return task_service.get_multi(db,skip=skip,limit=skip)
 
-@router.patch('/tasks/{task_id}',tags=['Tasks'])
-def patch_task(task_id:int,data:TaskPatch):
-    if task_id not in tasks:
-        raise HTTPException(status_code=404, detail='Task not found')
+@router.patch('/{task_id}',response_model=TaskResponse)
+@router.put('/{task_id}',response_model=TaskResponse)
+def update_task(task_id:int,data:TaskUpdate,db:Session = Depends(get_db)):
+    db_obj=task_service.get_by_id(db,id=task_id)
+    return task_service.update(db,db_obj=db_obj,obj_in=data)
 
-    task = tasks[task_id]
-
-    if data.title is not None:
-        task['title'] = data.title
-
-    if data.student_id is not None:
-        task['student_id'] = data.student_id
-
-    if data.teacher_id is not None:
-        task['teacher_id'] = data.teacher_id
-
-    return task
 
 @router.delete('/tasks/{task_id}',tags=['Tasks'])
-def delete_task(task_id:int):
-    if task_id in tasks:
-        del tasks[task_id]
-        return {'message':'Task deleted'}
-    else:
-        raise HTTPException(status_code=404, detail='Task not found')
+def delete_task(task_id:int,db:Session = Depends(get_db)):
+    return task_service.remove(db,id=task_id)
+
 

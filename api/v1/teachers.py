@@ -2,12 +2,10 @@ from fastapi import APIRouter, HTTPException,status,Depends
 from schemas.teachers import *
 from core.database import get_db
 from repository.teachers import teacher_rep
-fro
 
 router = APIRouter(prefix='/teachers',tags=['Teachers'])
-teachers = {}
 
-@router.get('/teachers/{teacher_id}',tags=['Teachers'])
+@router.get('/{teacher_id}',response_model=Еу)
 def read_teacher(teacher_id:int):
     if teacher_id in teachers:
         return teachers[teacher_id]

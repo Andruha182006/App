@@ -1,62 +1,33 @@
-from fastapi import APIRouter,HTTPException
-from schemas.students import *
+from fastapi import APIRouter,status
+from fastapi.params import Depends
 
-router = APIRouter()
+from core.database import get_db
+from schemas.students import StudentResponse,StudentFilter,StudentCreate,StudentUpdate
+from services.students import student_service
+from sqlalchemy.orm import Session
 
-students = {}
+router = APIRouter(prefix='/students',tags =['Students'])
 
-@router.get('/students/{student_id}',tags=['Students'])
-def read_student(student_id:int):
-    if student_id in students:
-        return students[student_id]
-    else:
-        raise HTTPException(status_code=404,detail='Student not found')
+@router.get('/{student_id}',response_model=list[StudentResponse])
+def read_student(filter:StudentFilter = Depends(),db:Session = Depends(get_db),skip:int=0,limit:int=100):
+    if filter.name:
+        return student_service.get_by_name(db,name = filter.name,skip=skip,limit=limit)
+    if filter.age:
+        return student_service.get_by_age(db,age=filter.age,skip=skip,limit=limit)
+    if filter.email:
+        return student_service.get_by_email(db,email=filter.email,skip=skip,limit=limit)
 
-@router.post('/students',tags=['Students'])
-def create_student(data:StudentCreate):
-    student_id = len(students) + 1
-    students[student_id] = {
-        'id':student_id,
-        'name':data.name,
-        'age':data.age,
-        'email':data.email
-    }
+    return student_service.get_multi(db,skip,limit)
+@router.post('/{student_id}',response_model=StudentResponse,status_code=status.HTTP_201_CREATED)
+def create_student(data:StudentCreate,db:Session = Depends(get_db)):
+    return student_service.create(db,obj_in=data )
 
-    return students[student_id]
-
-@router.put('/students/{student_id}',tags=['Students'])
-def put_student(student_id:int,data:StudentUpdate):
-    if student_id not in students:
-        raise HTTPException(status_code=404,detail='Student not found')
-    students[student_id] =  {
-        'id':student_id,
-        'name':data.name,
-        'age':data.age,
-        'email': data.email
-    }
-    return students[student_id]
-
-@router.patch('/students/{student_id}',tags=['Students'])
-def patch_student(student_id:int,data:StudentPatch):
-    if student_id not in students:
-        raise HTTPException(status_code=404, detail='Student not found')
-    student = students[student_id]
-
-    if data.name is not None:
-        student['name'] = data.name
-
-    if data.age is not None:
-        student['age'] = data.age
-
-    if data.email is not None:
-        student['email'] = data.email
-
-    return student
+@router.patch('/{student_id}',response_model=StudentResponse)
+@router.put('/{student_id}',response_model=StudentResponse)
+def put_student(student_id:int,data:StudentUpdate,db:Session = Depends(get_db)):
+    db_obj = student_service.get_by_id(db,id = student_id)
+    return student_service.update(db,db_obj=db_obj,obj_in=data)
 
 @router.delete('/students/{student_id}',tags=['Students'])
-def delete_student(student_id:int):
-    if student_id in students:
-        del students[student_id]
-        return {'message': 'Student deleted'}
-    else:
-        raise HTTPException(status_code=404, detail='Student not found')
+def delete_student(student_id:int,db:Session = Depends(get_db)):
+    return student_service.remove(db,id=student_id)
