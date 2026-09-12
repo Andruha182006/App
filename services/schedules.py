@@ -21,3 +21,5 @@ class ScheduleService(ServiceBase[Schedule,ScheduleUpdate,ScheduleCreate]):
                 detail=f"Schedule for group '{group}' not found",
             )
         return schedules
+
+schedule_service = ScheduleService()

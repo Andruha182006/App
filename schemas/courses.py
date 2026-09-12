@@ -1,5 +1,3 @@
-from logging import config
-
 from pydantic import BaseModel,ConfigDict
 
 class CoursesSchema(BaseModel):
@@ -14,7 +12,7 @@ class CoursesUpdate(CoursesSchema):
     name:str|None = None
     credits:int|None = None
     teacher_id:int|None = None
-    
+
 class CourseResponse(CoursesSchema):
     id: int
 
