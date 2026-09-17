@@ -28,7 +28,6 @@ def create_teacher(data:TeacherCreate,db:Session = Depends(get_db)):
 @router.patch('/{teacher_id}',response_model=TeacherResponse)
 @router.put('/{teacher_id}',response_model=TeacherResponse)
 def update_teacher(teacher_id:int,data:TeacherUpdate,db:Session = Depends(get_db)):
-    db_obj = teacher_service.get_by_id(db,id=teacher_id)
     return teacher_service.update(db,id=teacher_id,data=data)
 
 @router.delete('/{teacher_id}',status_code=status.HTTP_204_NO_CONTENT)
