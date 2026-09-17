@@ -29,7 +29,6 @@ def create_student(data:StudentCreate,db:Session = Depends(get_db)):
 @router.patch('/{student_id}',response_model=StudentResponse)
 @router.put('/{student_id}',response_model=StudentResponse)
 def update_student(student_id:int,data:StudentUpdate,db:Session = Depends(get_db)):
-    db_obj = student_service.get_by_id(db,id = student_id)
     return student_service.update(db,id=student_id,data=data)
 
 @router.delete('/{student_id}',status_code=status.HTTP_204_NO_CONTENT)
