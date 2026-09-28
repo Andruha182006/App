@@ -1,5 +1,5 @@
 from models import Course
-from fastapi import HTTPException
+from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
 
 from repository import course_rep
@@ -31,5 +31,13 @@ class CourseService(ServiceBase[Course,CoursesUpdate,CoursesCreate]):
         if not courses:
             raise HTTPException(status_code=404,detail=(f'{self.repository.model.__name__} with teacher{teacher_id} not found'))
         return courses
+
+    def create(self, db: Session, data: CoursesCreate) -> Course:
+        if data.teacher_id == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid teacher ID"
+            )
+        return super().create(db, data=data)
 
 course_service = CourseService()

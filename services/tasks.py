@@ -1,5 +1,5 @@
 from models import Task
-from fastapi import HTTPException
+from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
 from services.base import ServiceBase
 from repository.tasks import task_rep

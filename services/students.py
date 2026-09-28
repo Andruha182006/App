@@ -1,11 +1,11 @@
 from models import Student
-from fastapi import HTTPException
+from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
 from schemas.students import StudentCreate,StudentUpdate
 from services.base import ServiceBase
 from repository.students import student_rep
 
-class StudentService(ServiceBase[Student,StudentUpdate,StudentCreate]):
+class StudentService(ServiceBase[Student,StudentCreate,StudentUpdate]):
     def __init__(self):
         super().__init__(repository=student_rep)
 
@@ -26,5 +26,14 @@ class StudentService(ServiceBase[Student,StudentUpdate,StudentCreate]):
         if not students:
             raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__}with email {email} not found')
         return students
+
+    def create(self, db: Session, data: StudentCreate) -> Student:
+        existing_student = self.repository.get_by_email(db, email=data.email)
+        if existing_student:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Student with the same email already exist"
+            )
+        return super().create(db, data=data)
 
 student_service = StudentService()

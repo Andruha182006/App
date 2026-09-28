@@ -1,5 +1,5 @@
 from models import Teacher
-from fastapi import HTTPException
+from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
 from schemas.teachers import TeacherCreate, TeacherUpdate
 from services.base import ServiceBase
@@ -27,4 +27,15 @@ class TeacherService(ServiceBase[Teacher,TeacherCreate,TeacherUpdate]):
             raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__}with email {email} not found')
         return teacher
 
+    def create(self, db: Session, data: TeacherCreate) -> Teacher:
+
+        existing_teacher = self.repository.get_by_email(db, email=data.email)
+        if existing_teacher:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Teacher with the same email already exist"
+            )
+
+        
+        return super().create(db, data=data)
 teacher_service = TeacherService()

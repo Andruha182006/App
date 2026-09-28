@@ -22,14 +22,29 @@ class ServiceBase(Generic[ModelType,CreateSchemaType,UpdateSchemaType]):
     def get_all(self,db:Session,skip:int = 0,limit:int = 100) -> list[ModelType]:
         return self.repository.get_all(db,skip=skip,limit=limit)
 
-    def create(self,db:Session,data:CreateSchemaType) -> ModelType:
-        return self.repository.create(db,obj_in_data=data.model_dump())
+    def create(self, db: Session, data: CreateSchemaType) -> ModelType:
+        obj_data = data.model_dump()
+        db_obj = self.repository.create(db, obj_in_data=obj_data)
+
+        db.commit()  # Фіксуємо транзакцію на рівні бізнес-логіки
+        db.refresh(db_obj)  # За потреби оновлюємо стан об'єкта
+        return db_obj
 
     def update(self,db:Session,id:int,data:UpdateSchemaType) -> ModelType:
-        obj = self.get_by_id(db,id = id)
+        db_obj = self.get_by_id(db,id = id)
+        if not db_obj:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Object not found"
+            )
         update_data = data.model_dump(exclude_unset=True)
-        return self.repository.update(db,db_obj=obj,update_data=update_data)
+        return self.repository.update(db,db_obj=db_obj,data=update_data)
 
     def delete(self,db:Session,id:int) -> None:
-        self.get_by_id(db,id=id)
+        db_obj = self.get_by_id(db,id=id)
+        if not db_obj:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Student with id={id} not found"
+            )
         self.repository.delete(db,id=id)
