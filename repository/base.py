@@ -4,6 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 from core.database import Base
 
+
 ModelType = TypeVar('ModelType',bound=Base)
 
 class CRUDBase(Generic[ModelType]):
@@ -16,16 +17,15 @@ class CRUDBase(Generic[ModelType]):
     def get_all(self,db:Session,skip:int = 0 ,limit :int = 100 ) -> list[ModelType]:
         query = select(self.model).offset(skip).limit(limit)
         return list(db.scalars(query).all())
-
-    def create(self,db:Session,obj_in_data:dict[str,Any]) -> ModelType:
+    
+    def create(self, db: Session, obj_in_data: dict[str, Any]) -> ModelType:
         db_obj = self.model(**obj_in_data)
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        db.flush()  # Генерує ID та первинні ключі в сесії, але НЕ закриває транзакцію
         return db_obj
 
-    def update(self,db:Session,db_obj:ModelType,update_data:dict[str,Any]) -> ModelType:
-        for field,value in update_data.items():
+    def update(self,db:Session,db_obj:ModelType,data:dict[str,Any]) -> ModelType:
+        for field,value in data.items():
             if hasattr(db_obj,field):
                 setattr(db_obj,field,value)
 

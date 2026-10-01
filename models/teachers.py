@@ -1,5 +1,5 @@
 from sqlalchemy import String
-from sqlalchemy.orm import Mapped,mapped_column
+from sqlalchemy.orm import Mapped,mapped_column,relationship
 from core.database import Base
 
 class Teacher(Base):
@@ -9,3 +9,7 @@ class Teacher(Base):
     name:Mapped[str]=mapped_column(String(50))
     department:Mapped[str]=mapped_column(String(100))
     email:Mapped[str]=mapped_column(String(100),unique=True,index=True)
+
+    courses = relationship("Course", back_populates="teachers")
+    schedules = relationship("Schedule", back_populates="teachers")
+    tasks = relationship("Task", back_populates="teachers")
