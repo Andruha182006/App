@@ -10,5 +10,5 @@ class Task(Base):
     student_id: Mapped[int]=mapped_column(ForeignKey('students.id'),nullable=False)
     teacher_id: Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
 
-    student = relationship("Student", back_populates="tasks")
-    teacher = relationship("Teacher", back_populates="tasks")
+    students = relationship("Student", back_populates="tasks")
+    teachers = relationship("Teacher", back_populates="tasks")

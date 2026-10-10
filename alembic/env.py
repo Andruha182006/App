@@ -5,6 +5,12 @@ sys.path.append(str(Path(__file__).resolve().parents[1]))
 
 from core.database import Base,DATABASE_URL
 from models import Teacher, Schedule, Course,Student,Task
+from models.users import User
+from models.schedules import Schedule
+from models.teachers import Teacher
+from models.courses import Course
+from models.tasks import Task
+from models.students import Student
 
 from logging.config import fileConfig
 

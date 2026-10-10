@@ -11,5 +11,5 @@ class Schedule(Base):
     course_id:Mapped[int]=mapped_column(ForeignKey('courses.id'),nullable=False)
     teacher_id:Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
 
-    course = relationship("Course", back_populates="schedules")
-    teacher = relationship("Teacher", back_populates="schedules")
+    courses = relationship("Course", back_populates="schedules")
+    teachers = relationship("Teacher", back_populates="schedules")
