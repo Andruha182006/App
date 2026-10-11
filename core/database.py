@@ -5,8 +5,6 @@ from typing import AsyncGenerator
 
 engine = create_async_engine(settings.DATABASE_URL,echo=True)
 
-DATABASE_URL = "postgresql+asyncpg://postgres:postgres@localhost:5432/my_db"
-
 AsyncSessionLocal = async_sessionmaker(autocommit=False,
                                        autoflush=False,
                                        bind=engine,
