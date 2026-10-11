@@ -1,8 +1,7 @@
-from typing import Any,Generic,Type,TypeVar
+from typing import Any,Generic,Type,TypeVar,Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from core.database import Base
-
 
 ModelType = TypeVar('ModelType',bound=Base)
 
@@ -13,7 +12,7 @@ class CRUDBase(Generic[ModelType]):
     async def get_by_id(self,db:AsyncSession,id:int) -> ModelType|None:
         return await db.get(self.model,id)
 
-    async def get_all(self,db:AsyncSession,skip:int = 0 ,limit :int = 100 ) -> list[ModelType]:
+    async def get_all(self,db:AsyncSession,skip:int = 0 ,limit :int = 100 ) -> Sequence[ModelType]:
         query = select(self.model).offset(skip).limit(limit)
         result = await db.execute(query)
         return list(result.scalars().all())
@@ -36,7 +35,7 @@ class CRUDBase(Generic[ModelType]):
         return db_obj
 
     async def delete(self,db:AsyncSession, id:int) -> bool:
-        obj = self.get_by_id(db,id)
+        obj = await self.get_by_id(db,id)
         if not obj:
             return False
         await db.delete(obj)
