@@ -18,16 +18,18 @@ async def read_task_by_id(task_id:int,db:AsyncSession = Depends(get_db)):
 @router.get('/',response_model=Sequence[TaskResponse])
 async def read_task(filter:TaskFilter = Depends(),db:AsyncSession = Depends(get_db),skip:int=0,limit:int=100):
     if filter.title:
-        return await task_service.get_by_title(db,title = filter.title,skip=skip,limit=limit)
+        task = await task_service.get_by_title(db,title = filter.title,skip=skip,limit=limit)
+        return [task] if task else []
     if filter.student_id:
-        return await task_service.get_by_student_id(db,student_id=filter.student_id,skip=skip,limit=limit)
+        task =  await task_service.get_by_student_id(db,student_id=filter.student_id,skip=skip,limit=limit)
+        return [task] if task else []
     if filter.teacher_id:
-        return await task_service.get_by_teacher_id(db,teacher_id=filter.teacher_id,skip=skip,limit=limit)
+        task = await task_service.get_by_teacher_id(db,teacher_id=filter.teacher_id,skip=skip,limit=limit)
+        return [task] if task else []
 
     return await task_service.get_all(db,skip=skip,limit=skip)
 
 @router.patch('/{task_id}',response_model=TaskResponse)
-@router.put('/{task_id}',response_model=TaskResponse)
 async def update_task(task_id:int,data:TaskUpdate,db:AsyncSession = Depends(get_db)):
     return await task_service.update(db,id=task_id,data=data)
 
@@ -35,6 +37,6 @@ async def update_task(task_id:int,data:TaskUpdate,db:AsyncSession = Depends(get_
 @router.delete('/{task_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_task(task_id:int,db:AsyncSession = Depends(get_db)):
     await task_service.delete(db,id=task_id)
-    return None
+
 
 

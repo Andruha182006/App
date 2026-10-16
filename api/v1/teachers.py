@@ -27,11 +27,9 @@ async def create_teacher(data:TeacherCreate,db:AsyncSession = Depends(get_db)):
     return await teacher_service.create(db,data=data)
 
 @router.patch('/{teacher_id}',response_model=TeacherResponse)
-@router.put('/{teacher_id}',response_model=TeacherResponse)
 async def update_teacher(teacher_id:int,data:TeacherUpdate,db:AsyncSession = Depends(get_db)):
     return await teacher_service.update(db,id=teacher_id,data=data)
 
 @router.delete('/{teacher_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_teacher(teacher_id:int,db:AsyncSession = Depends(get_db)):
     await teacher_service.delete(db,id=teacher_id)
-    return None
