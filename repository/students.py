@@ -1,26 +1,29 @@
+
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from repository.base import CRUDBase
 from models.students import Student
+from typing import Sequence
 
 class StudentRepository(CRUDBase[Student]):
     def __init__(self):
         super().__init__(Student)
 
-    def get_by_email(self,db: Session,email:str) -> Student|None:
+    async def get_by_email(self,db: AsyncSession,email:str) -> Student|None:
         query = select(self.model).where(self.model.email == email)
-        return db.scalar(query)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
 
-    def get_by_name(self,db:Session,name:str,skip: int = 0,limit:int = 100) -> list[Student]:
+    async def get_by_name(self,db:AsyncSession,name:str,skip: int = 0,limit:int = 100) -> Sequence[Student]:
         query = select(self.model).where(self.model.name == name).offset(skip).limit(limit)
-        return list(db.scalars(query).all())
+        result = await db.execute(query)
+        return result.scalars().all()
 
-    def get_by_age(self,db:Session,age:int,skip: int = 0,limit:int = 100) -> list[Student]:
+    async def get_by_age(self,db:AsyncSession,age:int,skip: int = 0,limit:int = 100) -> Sequence[Student]:
         query = select(self.model).where(self.model.age == age ).offset(skip).limit(limit)
-        return list(db.scalars(query).all())
-
+        result = await db.execute(query)
+        return result.scalars().all()
 
 student_rep = StudentRepository()
-
 
 

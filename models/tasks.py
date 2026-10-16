@@ -1,5 +1,9 @@
 from sqlalchemy import String,ForeignKey
+<<<<<<< HEAD
 from sqlalchemy.orm import Mapped,mapped_column,relationship
+=======
+from sqlalchemy.orm import Mapped,mapped_column
+>>>>>>> feature/repository
 from core.database import Base
 
 class Task(Base):
@@ -7,8 +11,14 @@ class Task(Base):
 
     id: Mapped[int]=mapped_column(primary_key=True)
     title: Mapped[str]=mapped_column(String(100))
+<<<<<<< HEAD
     student_id: Mapped[int]=mapped_column(ForeignKey('students.id'),nullable=False)
     teacher_id: Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
 
     students = relationship("Student", back_populates="tasks")
     teachers = relationship("Teacher", back_populates="tasks")
+=======
+
+    student_id: Mapped[int]=mapped_column(ForeignKey('students.id'))
+    teacher_id: Mapped[int]=mapped_column(ForeignKey('teachers.id'))
+>>>>>>> feature/repository

@@ -1,9 +1,8 @@
-from typing import Any,Generic,Type,TypeVar
+
+from typing import Any,Generic,Type,TypeVar,Sequence
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from sqlalchemy.orm import Session
 from core.database import Base
-
 
 ModelType = TypeVar('ModelType',bound=Base)
 
@@ -11,33 +10,36 @@ class CRUDBase(Generic[ModelType]):
     def __init__(self,model:Type[ModelType]):
         self.model = model
 
-    def get_by_id(self,db:Session,id:int) -> ModelType|None:
-        return db.get(self.model,id)
+    async def get_by_id(self,db:AsyncSession,id:int) -> ModelType|None:
+        return await db.get(self.model,id)
 
-    def get_all(self,db:Session,skip:int = 0 ,limit :int = 100 ) -> list[ModelType]:
+    async def get_all(self,db:AsyncSession,skip:int = 0 ,limit :int = 100 ) -> Sequence[ModelType]:
         query = select(self.model).offset(skip).limit(limit)
-        return list(db.scalars(query).all())
-    
-    def create(self, db: Session, obj_in_data: dict[str, Any]) -> ModelType:
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
+    async def create(self,db:AsyncSession,obj_in_data:dict[str,Any]) -> ModelType:
         db_obj = self.model(**obj_in_data)
         db.add(db_obj)
-        db.flush()  # Генерує ID та первинні ключі в сесії, але НЕ закриває транзакцію
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def update(self,db:Session,db_obj:ModelType,data:dict[str,Any]) -> ModelType:
-        for field,value in data.items():
+    async def update(self,db:AsyncSession,db_obj:ModelType,update_data:dict[str,Any]) -> ModelType:
+        for field,value in update_data.items():
             if hasattr(db_obj,field):
                 setattr(db_obj,field,value)
 
         db.add(db_obj)
-        db.commit()
-        db.refresh(db_obj)
+        await db.commit()
+        await db.refresh(db_obj)
         return db_obj
 
-    def delete(self,db:Session, id:int) -> bool:
-        obj = self.get_by_id(db,id)
+    async def delete(self,db:AsyncSession, id:int) -> bool:
+        obj = await self.get_by_id(db,id)
         if not obj:
             return False
-        db.delete(obj)
-        db.commit()
+        await db.delete(obj)
+        await db.commit()
         return True
+
