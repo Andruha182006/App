@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,ConfigDict
 
 class StudentSchema(BaseModel):
     name: str
@@ -8,10 +8,19 @@ class StudentSchema(BaseModel):
 class StudentCreate(StudentSchema):
     pass
 
-class StudentPatch(BaseModel):
+class StudentUpdate(BaseModel):
     name : str|None = None
     age : int|None = None
     email : str|None = None
 
-class StudentUpdate(StudentSchema):
-    pass
+class StudentResponse(StudentSchema):
+    id : int
+
+class StudentFilter(BaseModel):
+    name : str|None = None
+    age : int|None = None
+    email : str|None = None
+
+
+model_config = ConfigDict(from_attributes=True)
+

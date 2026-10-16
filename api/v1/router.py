@@ -5,35 +5,35 @@ from api.v1.teachers import router as teacher_router
 from api.v1.courses import router as courses_router
 from api.v1.tasks import router as tasks_router
 from api.v1.schedules import router as schedules_router
+from api.v1.users import router as users_router
+from api.v1.auth import router as auth_router
 
 router = APIRouter()
 
 router.include_router(
-    students_router,
-    prefix='/students',
-    tags=['Students']
+    students_router
 )
 
 router.include_router(
-    teacher_router,
-    prefix='/teachers',
-    tags=['Teachers']
+    teacher_router
 )
 
 router.include_router(
-    courses_router,
-    prefix='/courses',
-    tags=['Courses']
+    courses_router
 )
 
 router.include_router(
-    tasks_router,
-    prefix='/tasks',
-    tags=['Tasks']
+    tasks_router
 )
 
 router.include_router(
-    schedules_router,
-    prefix='/schedules',
-    tags=['Schedules']
+    schedules_router
+)
+
+router.include_router(
+    users_router
+)
+
+router.include_router(
+    auth_router
 )

@@ -1,62 +1,71 @@
-from fastapi import APIRouter,HTTPException
-from schemas.students import *
+from typing import Sequence
+from fastapi import APIRouter, Depends, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
-router = APIRouter()
+from core.database import get_db
+from schemas.students import (
+    StudentCreate,
+    StudentFilter,
+    StudentResponse,
+    StudentUpdate,
+)
+from services.students import student_service
 
-students = {}
+router = APIRouter(prefix="/students", tags=["Students"])
 
-@router.get('/students/{student_id}',tags=['Students'])
-def read_student(student_id:int):
-    if student_id in students:
-        return students[student_id]
-    else:
-        raise HTTPException(status_code=404,detail='Student not found')
 
-@router.post('/students',tags=['Students'])
-def create_student(data:StudentCreate):
-    student_id = len(students) + 1
-    students[student_id] = {
-        'id':student_id,
-        'name':data.name,
-        'age':data.age,
-        'email':data.email
-    }
+@router.get("/{student_id}", response_model=StudentResponse)
+async def get_student_by_id(
+    student_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    return await student_service.get_by_id(db, id=student_id)
 
-    return students[student_id]
 
-@router.put('/students/{student_id}',tags=['Students'])
-def put_student(student_id:int,data:StudentUpdate):
-    if student_id not in students:
-        raise HTTPException(status_code=404,detail='Student not found')
-    students[student_id] =  {
-        'id':student_id,
-        'name':data.name,
-        'age':data.age,
-        'email': data.email
-    }
-    return students[student_id]
+@router.get("/", response_model=Sequence[StudentResponse])
+async def read_students(
+    filter: StudentFilter = Depends(),
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+):
+    if filter.name:
+        return await student_service.get_by_name(
+            db, name=filter.name, skip=skip, limit=limit
+        )
 
-@router.patch('/students/{student_id}',tags=['Students'])
-def patch_student(student_id:int,data:StudentPatch):
-    if student_id not in students:
-        raise HTTPException(status_code=404, detail='Student not found')
-    student = students[student_id]
+    if filter.age:
+        return await student_service.get_by_age(
+            db, age=filter.age, skip=skip, limit=limit
+        )
 
-    if data.name is not None:
-        student['name'] = data.name
+    if filter.email:
+        student = await student_service.get_by_email(db, email=filter.email)
+        return [student] if student else []
 
-    if data.age is not None:
-        student['age'] = data.age
+    return await student_service.get_all(db, skip=skip, limit=limit)
 
-    if data.email is not None:
-        student['email'] = data.email
 
-    return student
+@router.post("/", response_model=StudentResponse, status_code=status.HTTP_201_CREATED)
+async def create_student(
+    data: StudentCreate,
+    db: AsyncSession = Depends(get_db)
+):
+    return await student_service.create(db, data=data)
 
-@router.delete('/students/{student_id}',tags=['Students'])
-def delete_student(student_id:int):
-    if student_id in students:
-        del students[student_id]
-        return {'message': 'Student deleted'}
-    else:
-        raise HTTPException(status_code=404, detail='Student not found')
+
+@router.patch("/{student_id}", response_model=StudentResponse)
+async def update_student(
+    student_id: int,
+    data: StudentUpdate,
+    db: AsyncSession = Depends(get_db),
+):
+    return await student_service.update(db, id=student_id, data=data)
+
+
+@router.delete("/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_student(
+    student_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    await student_service.delete(db, id=student_id)

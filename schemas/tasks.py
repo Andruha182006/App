@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 class TaskSchema(BaseModel):
     title:str
@@ -9,9 +9,16 @@ class TaskCreate(TaskSchema):
     pass
 
 class TaskUpdate(TaskSchema):
-    pass
+    title: str | None = None
+    student_id: int | None = None
+    teacher_id: int | None = None
 
-class TaskPatch(BaseModel):
+class TaskFilter(BaseModel):
     title:str|None = None
     student_id:int|None = None
     teacher_id:int|None = None
+
+class TaskResponse(TaskSchema):
+    id:int
+
+model_config = ConfigDict(from_attributes=True)
