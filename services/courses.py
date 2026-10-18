@@ -13,12 +13,9 @@ class CourseService(ServiceBase[Course, CoursesCreate, CoursesUpdate]):
     def __init__(self):
         super().__init__(repository=course_rep)
 
-    async def get_by_title(
-        self, db: AsyncSession, title: str, skip: int = 0, limit: int = 100
-    ) -> Sequence[Course]:
-        courses = await self.repository.get_by_title(
-            db, title=title, skip=skip, limit=limit
-        )
+    async def get_by_title(self, db: AsyncSession,
+        title: str, skip: int = 0, limit: int = 100) -> Sequence[Course]:
+        courses = await self.repository.get_by_title(db, title=title, skip=skip, limit=limit)
         if not courses:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,

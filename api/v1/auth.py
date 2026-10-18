@@ -14,13 +14,6 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
     return await user_service.register_user(db, user_in)
 
 @router.post("/login", response_model=Token)
-async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db)
-):
-    token = await user_service.authenticate_user(
-        db,
-        email=form_data.username,
-        password=form_data.password
-    )
+async def login(form_data: OAuth2PasswordRequestForm = Depends(),db: AsyncSession = Depends(get_db)):
+    token = await user_service.authenticate_user(db,email=form_data.username,password=form_data.password)
     return {"access_token": token, "token_type": "bearer"}

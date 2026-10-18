@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
 from core.security import get_password_hash, verify_password, create_access_token
 from models.users import User
 from repository.users import UserRepository, user_repository
@@ -10,7 +10,7 @@ class UserService:
     def __init__(self, repo: UserRepository):
         self.repo = repo
 
-    def register_user(self, db: Session, user_in: UserCreate) -> User:
+    async def register_user(self, db: AsyncSession, user_in: UserCreate) -> User:
         """Реєстрація нового користувача."""
         # 1. Перевіряємо, чи немає користувача з таким email
         existing_user = self.repo.get_by_email(db, email=user_in.email)
