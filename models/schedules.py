@@ -1,9 +1,5 @@
 from sqlalchemy import String,ForeignKey
-<<<<<<< HEAD
 from sqlalchemy.orm import Mapped,mapped_column,relationship
-=======
-from sqlalchemy.orm import Mapped,mapped_column
->>>>>>> feature/repository
 from core.database import Base
 
 class Schedule(Base):
@@ -12,14 +8,10 @@ class Schedule(Base):
     id: Mapped[int]=mapped_column(primary_key=True,unique=True)
     group:Mapped[str]=mapped_column(String(50))
     room:Mapped[int]=mapped_column()
-<<<<<<< HEAD
     course_id:Mapped[int]=mapped_column(ForeignKey('courses.id'),nullable=False)
     teacher_id:Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
-
+    
     courses = relationship("Course", back_populates="schedules")
     teachers = relationship("Teacher", back_populates="schedules")
-=======
 
-    course_id:Mapped[int]=mapped_column(ForeignKey('courses.id'),nullable=False)
-    teacher_id:Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
->>>>>>> feature/repository
+
