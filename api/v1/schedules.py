@@ -15,17 +15,17 @@ async def create_schedule(data:ScheduleCreate,db:AsyncSession = Depends(get_db))
 @router.get('/',response_model=Sequence[ScheduleResponse])
 async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int =100,db:AsyncSession = Depends(get_db)):
     if filters.group:
-        schedule =  await schedule_service.get_by_group(db,group=filters.group,skip=skip,limit=limit)
-        return [schedule] if schedule else []
+        return  await schedule_service.get_by_group(db,group=filters.group,skip=skip,limit=limit)
+        
     if filters.room:
-        schedule = await schedule_service.get_by_room(db,room=filters.room,skip=skip,limit=limit)
-        return [schedule] if schedule else []
+        return await schedule_service.get_by_room(db,room=filters.room,skip=skip,limit=limit)
+
     if filters.teacher_id:
-        schedule = await schedule_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
-        return [schedule] if schedule else []
+        return await schedule_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
+
     if filters.course_id:
-        schedule =  schedule_service.get_by_course_id(db,course_id=filters.course_id,skip=skip,limit=limit)
-        return [schedule] if schedule else []
+        return await schedule_service.get_by_course_id(db,course_id=filters.course_id,skip=skip,limit=limit)
+
     return await schedule_service.get_multi(db,skip=skip,limit=limit)
 
 @router.patch('/{schedule_id}',response_model=ScheduleResponse)

@@ -18,14 +18,13 @@ async def read_course_by_id(course_id:int,db:AsyncSession = Depends(get_db)):
 @router.get('/',response_model=Sequence[CourseResponse])
 async def get_courses(filters:CourseFilter = Depends(),skip:int =0,limit:int =100,db:AsyncSession = Depends(get_db)):
     if filters.name:
-        course = await course_service.get_by_name(db,name=filters.name,skip=skip,limit=limit)
-        return [course] if course else []
+        return await course_service.get_by_name(db,name=filters.name,skip=skip,limit=limit)
+
     if filters.teacher_id:
-        course = await course_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
-        return [course] if course else []
+        return await course_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
+
     if filters.credits:
-        course = await course_service.get_by_credits(db,credits=filters.credits,skip=skip,limit=limit)
-        return [course] if course else []
+        return await course_service.get_by_credits(db,credits=filters.credits,skip=skip,limit=limit)
 
     return await course_service.get_all(db,skip=skip,limit=limit)
 
