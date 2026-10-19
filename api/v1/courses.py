@@ -27,7 +27,7 @@ async def get_courses(filters:CourseFilter = Depends(),skip:int =0,limit:int =10
         course = await course_service.get_by_credits(db,credits=filters.credits,skip=skip,limit=limit)
         return [course] if course else []
 
-    return course_service.get_all(db,skip=skip,limit=limit)
+    return await course_service.get_all(db,skip=skip,limit=limit)
 
 @router.patch('/{courser_id}',response_model=CourseResponse)
 async def update_course(course_id:int,data:CoursesUpdate,db:AsyncSession = Depends(get_db)):
