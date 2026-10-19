@@ -33,7 +33,7 @@ class ScheduleService(ServiceBase[Schedule,ScheduleCreate,ScheduleUpdate]):
         return schedules
 
     async def get_by_teacher_id(self,db:AsyncSession,teacher_id: int, skip: int = 0, limit: int = 100) -> Sequence[Schedule]:
-        schedules = await self.repository.get_by_course_id(db,course_id=teacher_id,skip=skip,limit=limit)
+        schedules = await self.repository.get_by_teacher_id(db,course_id=teacher_id,skip=skip,limit=limit)
         if not schedules:
             raise HTTPException(status_code=404,detail=f'Schedule for course {teacher_id} not found')
         return schedules
