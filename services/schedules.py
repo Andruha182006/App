@@ -26,5 +26,16 @@ class ScheduleService(ServiceBase[Schedule,ScheduleCreate,ScheduleUpdate]):
             raise HTTPException(status_code=404,detail=f'Schedule for room {room} not found')
         return schedules
 
+    async def get_by_course_id(self,db:AsyncSession,course_id: int, skip: int = 0, limit: int = 100) -> Sequence[Schedule]:
+        schedules = await self.repository.get_by_course_id(db,course_id=course_id,skip=skip,limit=limit)
+        if not schedules:
+            raise HTTPException(status_code=404,detail=f'Schedule for course {course_id} not found')
+        return schedules
+
+    async def get_by_teacher_id(self,db:AsyncSession,teacher_id: int, skip: int = 0, limit: int = 100) -> Sequence[Schedule]:
+        schedules = await self.repository.get_by_course_id(db,course_id=teacher_id,skip=skip,limit=limit)
+        if not schedules:
+            raise HTTPException(status_code=404,detail=f'Schedule for course {teacher_id} not found')
+        return schedules
 
 schedule_service = ScheduleService()

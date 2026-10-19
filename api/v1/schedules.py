@@ -16,7 +16,7 @@ async def create_schedule(data:ScheduleCreate,db:AsyncSession = Depends(get_db))
 async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int =100,db:AsyncSession = Depends(get_db)):
     if filters.group:
         return  await schedule_service.get_by_group(db,group=filters.group,skip=skip,limit=limit)
-        
+
     if filters.room:
         return await schedule_service.get_by_room(db,room=filters.room,skip=skip,limit=limit)
 
@@ -26,7 +26,7 @@ async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int 
     if filters.course_id:
         return await schedule_service.get_by_course_id(db,course_id=filters.course_id,skip=skip,limit=limit)
 
-    return await schedule_service.get_multi(db,skip=skip,limit=limit)
+    return await schedule_service.get_all(db,skip=skip,limit=limit)
 
 @router.patch('/{schedule_id}',response_model=ScheduleResponse)
 @router.put('/{schedule_id}',response_model=ScheduleResponse)
@@ -36,7 +36,7 @@ async def update_schedule(schedule_id:int,data:ScheduleUpdate,db:AsyncSession = 
 
 @router.delete('/{schedule_id}',response_model=ScheduleResponse)
 async def delete_schedule(schedule_id:int,db:AsyncSession = Depends(get_db)):
-     await schedule_service.remove(db,id=schedule_id)
+     await schedule_service.delete(db,id=schedule_id)
 
 
 
