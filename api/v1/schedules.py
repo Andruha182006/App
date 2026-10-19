@@ -10,7 +10,7 @@ router = APIRouter(prefix='/schedules',tags=['Schedules'])
 
 @router.post('/',response_model=ScheduleResponse,status_code=status.HTTP_201_CREATED)
 async def create_schedule(data:ScheduleCreate,db:AsyncSession = Depends(get_db)):
-    return await schedule_service.create(db,obj_in=data)
+    return await schedule_service.create(db,data=data)
 
 @router.get('/',response_model=Sequence[ScheduleResponse])
 async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int =100,db:AsyncSession = Depends(get_db)):
@@ -31,8 +31,8 @@ async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int 
 @router.patch('/{schedule_id}',response_model=ScheduleResponse)
 @router.put('/{schedule_id}',response_model=ScheduleResponse)
 async def update_schedule(schedule_id:int,data:ScheduleUpdate,db:AsyncSession = Depends(get_db)):
-    db_obj = await schedule_service.get_by_id(db,id=schedule_id)
-    return await schedule_service.update(db,db_obj=db_obj,obj_in=data)
+    return await schedule_service.get_by_id(db,id=schedule_id,data=data)
+
 
 @router.delete('/{schedule_id}',response_model=ScheduleResponse)
 async def delete_schedule(schedule_id:int,db:AsyncSession = Depends(get_db)):
