@@ -14,15 +14,11 @@ async def read_teacher_by_id(teacher_id:int,db:AsyncSession = Depends(get_db)):
 @router.get('/',response_model=Sequence[TeacherResponse])
 async def read_teacher(filter:TeacherFilter = Depends(),db:AsyncSession = Depends(get_db),skip:int=0,limit:int=100):
     if filter.name:
-        teacher =  await teacher_service.get_by_name(db,name=filter.name,skip=skip,limit=limit)
-        return [teacher] if teacher else []
+        return await teacher_service.get_by_name(db,name=filter.name,skip=skip,limit=limit)
     if filter.email:
-        teacher = await teacher_service.get_by_email(db,email=filter.email,skip=skip,limit=limit)
-        return[teacher] if teacher else []
+        return await teacher_service.get_by_email(db,email=filter.email,skip=skip,limit=limit)
     if filter.department:
-        teacher = await teacher_service.get_by_department(db,department=filter.department,skip=skip,limit=limit)
-        return [teacher] if teacher else []
-    
+        return await teacher_service.get_by_department(db,department=filter.department,skip=skip,limit=limit)
     return await teacher_service.get_all(db,skip=skip,limit=limit)
 
 @router.post('/',response_model=TeacherResponse,status_code=status.HTTP_201_CREATED)
