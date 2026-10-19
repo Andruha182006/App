@@ -14,6 +14,7 @@ class StudentUpdate(BaseModel):
     email : str|None = None
 
 class StudentResponse(StudentSchema):
+    model_config = ConfigDict(from_attributes=True)
     id : int
 
 class StudentFilter(BaseModel):
@@ -22,5 +23,5 @@ class StudentFilter(BaseModel):
     email : str|None = None
 
 
-model_config = ConfigDict(from_attributes=True)
+
 

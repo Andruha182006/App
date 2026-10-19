@@ -18,6 +18,7 @@ class ScheduleUpdate(BaseModel):
     room: int | None = None
 
 class ScheduleResponse(ScheduleSchema):
+    model_config = ConfigDict(from_attributes=True)
     id:int
 
 class ScheduleFilter(BaseModel):
@@ -26,5 +27,3 @@ class ScheduleFilter(BaseModel):
     teacher_id: int | None = None
     group: str | None = None
     room: int | None = None
-
-model_config = ConfigDict(from_attributes=True)

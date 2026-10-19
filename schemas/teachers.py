@@ -17,6 +17,6 @@ class TeacherFilter(BaseModel):
     department: str|None = None
 
 class TeacherResponse(TeacherSchema):
+    model_config = ConfigDict(from_attributes=True)
     id:int
 
-model_config = ConfigDict(from_attributes=True)

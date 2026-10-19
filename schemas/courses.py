@@ -14,6 +14,7 @@ class CoursesUpdate(CoursesSchema):
     teacher_id:int|None = None
 
 class CourseResponse(CoursesSchema):
+    model_config = ConfigDict(from_attributes=True)
     id: int
 
 class CourseFilter(BaseModel):
@@ -21,4 +22,3 @@ class CourseFilter(BaseModel):
     credits:int|None = None
     teacher_id:int|None = None
 
-model_config = ConfigDict(from_attributes=True)
