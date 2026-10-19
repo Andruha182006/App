@@ -7,7 +7,7 @@ from services.base import ServiceBase
 from repository.tasks import task_rep
 from schemas.tasks import TaskCreate,TaskUpdate
 
-class TaskService(ServiceBase[Task,TaskUpdate,TaskCreate]):
+class TaskService(ServiceBase[Task,TaskCreate,TaskUpdate]):
     def __init__(self):
         super().__init__(repository=task_rep)
 

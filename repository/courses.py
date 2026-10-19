@@ -9,8 +9,8 @@ class CourseRepository(CRUDBase[Course]):
     def __init__(self):
         super().__init__(Course)
 
-    async def get_by_name(self,db:AsyncSession,name:str, skip: int = 0,limit:int = 100) -> Sequence[Course]:
-        query = select(self.model).where(self.model.name == name).offset(skip).limit(limit)
+    async def get_by_title(self,db:AsyncSession,title:str, skip: int = 0,limit:int = 100) -> Sequence[Course]:
+        query = select(self.model).where(self.model.title == title).offset(skip).limit(limit)
         result = await db.execute(query)
         return list(result.scalars().all())
 

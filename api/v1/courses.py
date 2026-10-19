@@ -28,11 +28,11 @@ async def get_courses(filters:CourseFilter = Depends(),skip:int =0,limit:int =10
 
     return await course_service.get_all(db,skip=skip,limit=limit)
 
-@router.patch('/{courser_id}',response_model=CourseResponse)
+@router.patch('/{course_id}',response_model=CourseResponse)
 async def update_course(course_id:int,data:CoursesUpdate,db:AsyncSession = Depends(get_db)):
     return await course_service.update(db,id=course_id,data=data)
 
-@router.delete('/{courser_id}',status_code=status.HTTP_204_NO_CONTENT)
+@router.delete('/{course_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_course(course_id:int,db:AsyncSession = Depends(get_db)):
     await course_service.delete(db,id=course_id)
 

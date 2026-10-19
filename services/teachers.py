@@ -23,7 +23,7 @@ class TeacherService(ServiceBase[Teacher,TeacherCreate,TeacherUpdate]):
             raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__} with department {department} not found')
         return teachers
 
-    async def get_by_email(self,db:AsyncSession,email:str) -> Teacher:
+    async def get_by_email(self,db:AsyncSession,email:str) -> Teacher|None:
         teacher = await self.repository.get_by_email(db,email=email)
         if not teacher:
             raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__}with email {email} not found')
