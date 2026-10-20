@@ -33,7 +33,7 @@ async def update_schedule(schedule_id:int,data:ScheduleUpdate,db:AsyncSession = 
      return await schedule_service.update(db,data,id = schedule_id)
 
 
-@router.delete('/{schedule_id}',response_model=ScheduleResponse)
+@router.delete('/{schedule_id}',status_code=status.HTTP_204_NO_CONTENT)
 async def delete_schedule(schedule_id:int,db:AsyncSession = Depends(get_db)):
      await schedule_service.delete(db,id=schedule_id)
 
