@@ -29,9 +29,8 @@ async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int 
     return await schedule_service.get_all(db,skip=skip,limit=limit)
 
 @router.patch('/{schedule_id}',response_model=ScheduleResponse)
-@router.put('/{schedule_id}',response_model=ScheduleResponse)
 async def update_schedule(schedule_id:int,data:ScheduleUpdate,db:AsyncSession = Depends(get_db)):
-    return await schedule_service.get_by_id(db,id=schedule_id,data=data)
+     return await schedule_service.update(db,data,id = schedule_id)
 
 
 @router.delete('/{schedule_id}',response_model=ScheduleResponse)
