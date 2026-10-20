@@ -4,6 +4,7 @@ from models.teachers import Teacher
 from models.tasks import Task
 from models.courses import Course
 from models.schedules import Schedule
+from models.users import User
 
 __all__ = [
 'Base',
@@ -11,5 +12,6 @@ __all__ = [
 'Teacher',
 'Task',
 'Course',
-'Schedule'
+'Schedule',
+'User'
 ]
