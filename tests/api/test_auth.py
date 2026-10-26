@@ -1,10 +1,8 @@
-"""Інтеграційні тести реєстрації, логіну та /me."""
 
 import jwt
 
 from core.config import settings
 from tests.factories import create_user
-
 
 async def test_register_returns_201_without_password(client):
     response = await client.post(

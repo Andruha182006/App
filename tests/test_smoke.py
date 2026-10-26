@@ -1,12 +1,20 @@
-from sqlalchemy import select
+from sqlalchemy import select, text
 
 from models.users import User
 
 
-async def test_sqlite_engine_registers_all_tables(db_engine):
+async def test_tests_run_against_postgresql(db_engine):
+    assert db_engine.dialect.name == "postgresql"
+
+
+async def test_postgres_engine_registers_all_tables(db_engine):
     async with db_engine.connect() as conn:
-        tables = await conn.run_sync(lambda sync_conn: sync_conn.dialect.get_table_names(sync_conn))
-    assert {"students", "teachers", "courses", "tasks", "schedules", "users"} <= set(tables)
+        result = await conn.execute(
+            text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
+        )
+        tables = {row[0] for row in result}
+
+    assert {"students", "teachers", "courses", "tasks", "schedules", "users"} <= tables
 
 
 async def test_client_can_reach_app(client):

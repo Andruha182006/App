@@ -1,5 +1,3 @@
-"""Тести конфігурації застосунку: маршрути, OpenAPI, middleware."""
-
 import re
 
 from fastapi import FastAPI
@@ -39,8 +37,6 @@ async def test_openapi_endpoint_responds(client):
 
 
 async def test_timing_middleware_sets_header_and_logs(caplog):
-    """Middleware сама по собі працює — перевіряємо окремим застосунком."""
-
     test_app = FastAPI()
     test_app.add_middleware(TimingAndLoggingMiddleware)
 
