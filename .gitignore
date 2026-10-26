@@ -5,3 +5,7 @@ __pycache__/
 .env
 .idea
 .idea/
+.pytest_cache/
+.coverage
+htmlcov/
+backup.sql

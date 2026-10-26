@@ -16,7 +16,8 @@ async def read_teacher(filter:TeacherFilter = Depends(),db:AsyncSession = Depend
     if filter.name:
         return await teacher_service.get_by_name(db,name=filter.name,skip=skip,limit=limit)
     if filter.email:
-        return await teacher_service.get_by_email(db,email=filter.email,skip=skip,limit=limit)
+        teacher = await teacher_service.get_by_email(db,email=filter.email)
+        return [teacher]
     if filter.department:
         return await teacher_service.get_by_department(db,department=filter.department,skip=skip,limit=limit)
     return await teacher_service.get_all(db,skip=skip,limit=limit)

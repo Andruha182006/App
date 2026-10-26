@@ -19,9 +19,9 @@ async def read_task_by_id(task_id:int,db:AsyncSession = Depends(get_db)):
 async def read_task(filter:TaskFilter = Depends(),db:AsyncSession = Depends(get_db),skip:int=0,limit:int=100):
     if filter.title:
         return await task_service.get_by_title(db,title = filter.title,skip=skip,limit=limit)
-    if filter.student_id:
+    if filter.student_id is not None:
         return await task_service.get_by_student_id(db,student_id=filter.student_id,skip=skip,limit=limit)
-    if filter.teacher_id:
+    if filter.teacher_id is not None:
         return await task_service.get_by_teacher_id(db,teacher_id=filter.teacher_id,skip=skip,limit=limit)
 
     return await task_service.get_all(db,skip=skip,limit=limit)

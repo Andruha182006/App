@@ -7,7 +7,7 @@ from schemas.students import StudentCreate,StudentUpdate
 from services.base import ServiceBase
 from repository.students import student_rep
 
-class StudentService(ServiceBase[Student,StudentUpdate,StudentCreate]):
+class StudentService(ServiceBase[Student,StudentCreate,StudentUpdate]):
     def __init__(self):
         super().__init__(repository=student_rep)
 
@@ -22,7 +22,7 @@ class StudentService(ServiceBase[Student,StudentUpdate,StudentCreate]):
         int,skip:int = 0,limit:int = 100) ->Sequence[Student]:
         students = await self.repository.get_by_age(db, age=age, skip=skip, limit=limit)
         if not students:
-            raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__} with department {age} not found')
+            raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__} with age {age} not found')
         return students
 
     async def get_by_email(self,db:AsyncSession,email:str) -> Student:

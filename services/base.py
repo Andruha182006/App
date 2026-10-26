@@ -31,6 +31,7 @@ class ServiceBase(Generic[ModelType,CreateSchemaType,UpdateSchemaType]):
         return await self.repository.update(db,db_obj=obj,update_data=update_data)
 
     async def delete(self,db:AsyncSession,id:int) -> None:
-        await self.get_by_id(db,id=id)
-        await self.repository.delete(db,id=id)
+        deleted = await self.repository.delete(db,id=id)
+        if not deleted:
+            raise HTTPException(status_code=404,detail=f'{self.repository.model.__name__} not found')
 

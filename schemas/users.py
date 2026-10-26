@@ -18,6 +18,6 @@ class UserUpdate(BaseModel):
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
     id:UUID
-    name:str
+    name:str|None = None
     email:EmailStr
     is_active:bool

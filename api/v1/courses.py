@@ -20,10 +20,10 @@ async def get_courses(filters:CourseFilter = Depends(),skip:int =0,limit:int =10
     if filters.title:
         return await course_service.get_by_title(db,title=filters.title,skip=skip,limit=limit)
 
-    if filters.teacher_id:
+    if filters.teacher_id is not None:
         return await course_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
 
-    if filters.credits:
+    if filters.credits is not None:
         return await course_service.get_by_credits(db,credits=filters.credits,skip=skip,limit=limit)
 
     return await course_service.get_all(db,skip=skip,limit=limit)

@@ -17,20 +17,20 @@ async def get_schedule(filters:ScheduleFilter = Depends(),skip:int =0,limit:int 
     if filters.group:
         return  await schedule_service.get_by_group(db,group=filters.group,skip=skip,limit=limit)
 
-    if filters.room:
+    if filters.room is not None:
         return await schedule_service.get_by_room(db,room=filters.room,skip=skip,limit=limit)
 
-    if filters.teacher_id:
+    if filters.teacher_id is not None:
         return await schedule_service.get_by_teacher_id(db,teacher_id=filters.teacher_id,skip=skip,limit=limit)
 
-    if filters.course_id:
+    if filters.course_id is not None:
         return await schedule_service.get_by_course_id(db,course_id=filters.course_id,skip=skip,limit=limit)
 
     return await schedule_service.get_all(db,skip=skip,limit=limit)
 
 @router.patch('/{schedule_id}',response_model=ScheduleResponse)
 async def update_schedule(schedule_id:int,data:ScheduleUpdate,db:AsyncSession = Depends(get_db)):
-     return await schedule_service.update(db,data,id = schedule_id)
+     return await schedule_service.update(db,id = schedule_id,data = data)
 
 
 @router.delete('/{schedule_id}',status_code=status.HTTP_204_NO_CONTENT)

@@ -34,7 +34,7 @@ async def read_students(
             db, name=filter.name, skip=skip, limit=limit
         )
 
-    if filter.age:
+    if filter.age is not None:
         return await student_service.get_by_age(
             db, age=filter.age, skip=skip, limit=limit
         )
