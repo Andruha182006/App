@@ -1,15 +1,24 @@
-from sqlalchemy import String,ForeignKey
-from sqlalchemy.orm import Mapped,mapped_column,relationship
+from sqlalchemy import ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from core.database import Base
 
 
 class Course(Base):
     __tablename__ = 'courses'
 
-    id:Mapped[int]=mapped_column(primary_key=True)
-    title:Mapped[str]=mapped_column(String(50))
-    credits:Mapped[int]=mapped_column()
-    teacher_id:Mapped[int]=mapped_column(ForeignKey('teachers.id'),nullable=False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str] = mapped_column(String(50))
+    credits: Mapped[int] = mapped_column()
+    teacher_id: Mapped[int] = mapped_column(
+        ForeignKey('teachers.id'),
+        nullable=False,
+        index=True,
+    )
 
     teachers = relationship("Teacher", back_populates="courses")
-    schedules = relationship("Schedule", back_populates="courses")
+    schedules = relationship(
+        "Schedule",
+        back_populates="courses",
+        passive_deletes=True,
+    )

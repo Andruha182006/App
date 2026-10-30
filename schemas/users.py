@@ -8,7 +8,7 @@ class UserSchema(BaseModel):
     email:EmailStr
 
 class UserCreate(UserSchema):
-    password:str = Field(...,min_length=8)
+    password: str = Field(..., min_length=8, max_length=128)
 
 class UserUpdate(BaseModel):
     name:Optional[str] = Field(None,min_length=2,max_length=100)

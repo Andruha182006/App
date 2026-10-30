@@ -12,6 +12,10 @@ import models
 
 from alembic import context
 
+if sys.platform == "win32":
+    # psycopg async не підтримує ProactorEventLoop.
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 # this is the Alembic Config object, which provides

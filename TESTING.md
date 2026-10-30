@@ -10,6 +10,8 @@ docker compose -f docker-compose.test.yml up -d
 .\.venv\Scripts\python.exe -m pytest
 ```
 
+Очікуваний результат: `162 passed`, покриття ~99%.
+
 Після роботи:
 
 ```powershell
@@ -41,7 +43,7 @@ docker compose -f docker-compose.test.yml down
 
 ## Використання власного PostgreSQL
 
-За замовчуванням тести йдуть на `localhost:5433`, користувач `postgres`, пароль `postgres`, БД `postgres_test`.
+За замовчуванням тести йдуть на `127.0.0.1:5433`, користувач `postgres`, пароль `postgres`, БД `postgres_test`.
 Можна перевизначити змінними оточення:
 
 ```powershell
