@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
 from typing import Sequence
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.enums import TaskStatus
 from models import Task
 from repository.tasks import task_rep
 from schemas.tasks import TaskCreate, TaskUpdate
@@ -11,6 +13,23 @@ from services.base import ServiceBase
 class TaskService(ServiceBase[Task, TaskCreate, TaskUpdate]):
     def __init__(self):
         super().__init__(repository=task_rep)
+
+    async def submit(
+        self,
+        db: AsyncSession,
+        *,
+        task: Task,
+        answer: str,
+    ) -> Task:
+        return await self.repository.update(
+            db,
+            db_obj=task,
+            update_data={
+                "answer": answer,
+                "status": TaskStatus.submitted,
+                "submitted_at": datetime.now(timezone.utc),
+            },
+        )
 
     async def get_by_title(
         self,

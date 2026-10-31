@@ -1,7 +1,10 @@
-from sqlalchemy import ForeignKey, String
+from datetime import datetime
+
+from sqlalchemy import DateTime, Enum, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from core.database import Base
+from core.enums import TaskStatus
 
 
 class Task(Base):
@@ -18,6 +21,22 @@ class Task(Base):
         ForeignKey('teachers.id'),
         nullable=False,
         index=True,
+    )
+    status: Mapped[TaskStatus] = mapped_column(
+        Enum(
+            TaskStatus,
+            name='task_status',
+            native_enum=False,
+            length=20,
+            values_callable=lambda enum_cls: [item.value for item in enum_cls],
+        ),
+        default=TaskStatus.assigned,
+        nullable=False,
+    )
+    answer: Mapped[str | None] = mapped_column(Text, nullable=True)
+    submitted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
     )
 
     students = relationship("Student", back_populates="tasks")

@@ -19,6 +19,7 @@ EXPECTED_PATHS = {
     "/courses/{course_id}",
     "/tasks/",
     "/tasks/{task_id}",
+    "/tasks/{task_id}/submit",
     "/schedules/",
     "/schedules/{schedule_id}",
     "/register",

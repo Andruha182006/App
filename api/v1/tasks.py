@@ -1,11 +1,18 @@
 from typing import Sequence
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.dependencies import get_current_user
+from api.v1.dependencies import get_current_student, get_current_user
 from core.database import get_db
-from schemas.tasks import TaskCreate, TaskFilter, TaskResponse, TaskUpdate
+from models.students import Student
+from schemas.tasks import (
+    TaskCreate,
+    TaskFilter,
+    TaskResponse,
+    TaskSubmit,
+    TaskUpdate,
+)
 from services.tasks import task_service
 
 router = APIRouter(
@@ -25,6 +32,22 @@ async def create_task(
     db: AsyncSession = Depends(get_db),
 ):
     return await task_service.create(db, data=data)
+
+
+@router.post("/{task_id}/submit", response_model=TaskResponse)
+async def submit_task(
+    task_id: int,
+    data: TaskSubmit,
+    current_student: Student = Depends(get_current_student),
+    db: AsyncSession = Depends(get_db),
+):
+    task = await task_service.get_by_id(db, id=task_id)
+    if task.student_id != current_student.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can submit only your own tasks",
+        )
+    return await task_service.submit(db, task=task, answer=data.answer)
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
