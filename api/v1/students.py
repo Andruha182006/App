@@ -3,8 +3,9 @@ from typing import Sequence
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.dependencies import get_current_user
+from api.v1.dependencies import get_current_student, get_current_user
 from core.database import get_db
+from models.students import Student
 from schemas.students import (
     StudentCreate,
     StudentFilter,
@@ -18,6 +19,13 @@ router = APIRouter(
     tags=["Students"],
     dependencies=[Depends(get_current_user)],
 )
+
+
+@router.get("/me", response_model=StudentResponse)
+async def read_my_student_profile(
+    current_student: Student = Depends(get_current_student),
+):
+    return current_student
 
 
 @router.get("/{student_id}", response_model=StudentResponse)

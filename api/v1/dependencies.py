@@ -9,7 +9,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from core.config import settings
 from core.database import get_db
 from core.enums import UserRole
+from models.students import Student
+from models.teachers import Teacher
 from models.users import User
+from repository.students import student_rep
+from repository.teachers import teacher_rep
 from repository.users import user_repository
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
@@ -48,3 +52,29 @@ def require_roles(*roles: UserRole) -> Callable:
         return current_user
 
     return checker
+
+
+async def get_current_student(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.student)),
+) -> Student:
+    student = await student_rep.get_by_user_id(db, user_id=current_user.id)
+    if student is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Student profile is not linked to this account",
+        )
+    return student
+
+
+async def get_current_teacher(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.teacher)),
+) -> Teacher:
+    teacher = await teacher_rep.get_by_user_id(db, user_id=current_user.id)
+    if teacher is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Teacher profile is not linked to this account",
+        )
+    return teacher

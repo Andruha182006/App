@@ -4,10 +4,16 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from repository.base import CRUDBase
 from models.teachers import Teacher
 from typing import Sequence
+from uuid import UUID
 
 class TeacherRepository(CRUDBase[Teacher]):
     def __init__(self):
         super().__init__(Teacher)
+
+    async def get_by_user_id(self, db: AsyncSession, user_id: UUID) -> Teacher | None:
+        query = select(self.model).where(self.model.user_id == user_id)
+        result = await db.execute(query)
+        return result.scalar_one_or_none()
 
     async def get_by_email(self,db: AsyncSession,email:str) -> Teacher|None:
         query = select(self.model).where(self.model.email == email)

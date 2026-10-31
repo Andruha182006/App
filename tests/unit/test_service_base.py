@@ -68,6 +68,8 @@ async def test_create_dumps_schema_to_dict():
         "name": "Bob",
         "age": 22,
         "email": "bob@example.com",
+        "group": None,
+        "user_id": None,
     }
 
 

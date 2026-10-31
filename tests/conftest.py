@@ -43,6 +43,7 @@ from core.security import create_access_token
 import models  # noqa: F401  (реєструє всі таблиці в Base.metadata)
 from main import app
 from models.users import User
+from tests.factories import create_student, create_teacher, create_user
 
 
 @pytest.fixture(scope="session")
@@ -179,6 +180,46 @@ async def client(
     db_session.add(user)
     await db_session.commit()
     await db_session.refresh(user)
+
+    token = create_access_token(subject=user.id)
+    anon_client.headers["Authorization"] = f"Bearer {token}"
+
+    yield anon_client
+
+
+@pytest.fixture
+async def teacher_client(
+    anon_client: AsyncClient,
+    db_session: AsyncSession,
+) -> AsyncGenerator[AsyncClient, None]:
+    """HTTP-клієнт із токеном викладача та прив’язаним профілем."""
+    user = await create_user(
+        db_session,
+        email=f"teacher-{uuid4().hex[:12]}@example.com",
+        name="Test Teacher",
+        role=UserRole.teacher,
+    )
+    await create_teacher(db_session, user_id=user.id)
+
+    token = create_access_token(subject=user.id)
+    anon_client.headers["Authorization"] = f"Bearer {token}"
+
+    yield anon_client
+
+
+@pytest.fixture
+async def student_client(
+    anon_client: AsyncClient,
+    db_session: AsyncSession,
+) -> AsyncGenerator[AsyncClient, None]:
+    """HTTP-клієнт із токеном студента та прив’язаним профілем."""
+    user = await create_user(
+        db_session,
+        email=f"student-{uuid4().hex[:12]}@example.com",
+        name="Test Student",
+        role=UserRole.student,
+    )
+    await create_student(db_session, group="KN-21", user_id=user.id)
 
     token = create_access_token(subject=user.id)
     anon_client.headers["Authorization"] = f"Bearer {token}"

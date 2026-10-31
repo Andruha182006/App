@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
@@ -8,13 +10,14 @@ class TeacherSchema(BaseModel):
 
 
 class TeacherCreate(TeacherSchema):
-    pass
+    user_id: UUID | None = None
 
 
 class TeacherUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=50)
     email: EmailStr | None = Field(default=None, max_length=100)
     department: str | None = Field(default=None, min_length=1, max_length=100)
+    user_id: UUID | None = None
 
 
 class TeacherFilter(BaseModel):
@@ -30,3 +33,4 @@ class TeacherResponse(BaseModel):
     name: str
     email: str
     department: str
+    user_id: UUID | None = None

@@ -4,7 +4,7 @@
 Email генерується унікальним, щоб не конфліктувати з unique-обмеженнями.
 """
 
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,8 +28,16 @@ async def create_student(
     name: str = "Alice",
     age: int = 20,
     email: str | None = None,
+    group: str | None = None,
+    user_id: UUID | None = None,
 ) -> Student:
-    student = Student(name=name, age=age, email=email or _unique_email("student"))
+    student = Student(
+        name=name,
+        age=age,
+        email=email or _unique_email("student"),
+        group=group,
+        user_id=user_id,
+    )
     db.add(student)
     await db.commit()
     await db.refresh(student)
@@ -42,8 +50,14 @@ async def create_teacher(
     name: str = "Bob",
     department: str = "Math",
     email: str | None = None,
+    user_id: UUID | None = None,
 ) -> Teacher:
-    teacher = Teacher(name=name, department=department, email=email or _unique_email("teacher"))
+    teacher = Teacher(
+        name=name,
+        department=department,
+        email=email or _unique_email("teacher"),
+        user_id=user_id,
+    )
     db.add(teacher)
     await db.commit()
     await db.refresh(teacher)
