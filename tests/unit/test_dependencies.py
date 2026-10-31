@@ -9,6 +9,7 @@ from fastapi import HTTPException
 
 from api.v1 import dependencies
 from core.config import settings
+from core.enums import UserRole
 from core.security import create_access_token
 from models.users import User
 
@@ -30,6 +31,7 @@ def active_user() -> User:
         email="alice@example.com",
         hashed_password="hash",
         is_active=True,
+        role=UserRole.student,
     )
 
 
@@ -120,3 +122,21 @@ async def test_non_uuid_sub_raises_401(monkeypatch):
         await dependencies.get_current_user(db=object(), token=token)
 
     assert exc_info.value.status_code == 401
+
+
+async def test_require_roles_allows_matching_role(active_user):
+    checker = dependencies.require_roles(UserRole.student)
+
+    result = await checker(active_user)
+
+    assert result is active_user
+
+
+async def test_require_roles_rejects_other_role(active_user):
+    checker = dependencies.require_roles(UserRole.admin)
+
+    with pytest.raises(HTTPException) as exc_info:
+        await checker(active_user)
+
+    assert exc_info.value.status_code == 403
+    assert exc_info.value.detail == "Insufficient permissions"

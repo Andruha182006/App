@@ -1,11 +1,14 @@
+from collections.abc import Callable
 from uuid import UUID
+
+import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.config import settings
 from core.database import get_db
+from core.enums import UserRole
 from models.users import User
 from repository.users import user_repository
 
@@ -31,3 +34,17 @@ async def get_current_user(db: AsyncSession = Depends(get_db),token: str = Depen
     if user is None or not user.is_active:
         raise credentials_exception
     return user
+
+
+def require_roles(*roles: UserRole) -> Callable:
+    async def checker(
+        current_user: User = Depends(get_current_user),
+    ) -> User:
+        if current_user.role not in roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )
+        return current_user
+
+    return checker

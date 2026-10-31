@@ -5,6 +5,7 @@ from uuid import uuid4
 import pytest
 from fastapi import HTTPException
 
+from core.enums import UserRole
 from models.users import User
 from schemas.users import UserCreate
 from services.users import UserService
@@ -18,18 +19,30 @@ class FakeUserRepository:
     async def get_by_email(self, db, email: str):
         return self.existing
 
-    async def create(self, db, *, email: str, name: str, hashed_password: str) -> User:
+    async def create(
+        self,
+        db,
+        *,
+        email: str,
+        name: str,
+        hashed_password: str,
+        role,
+        is_active: bool = True,
+    ) -> User:
         self.created_with = {
             "email": email,
             "name": name,
             "hashed_password": hashed_password,
+            "role": role,
+            "is_active": is_active,
         }
         return User(
             id=uuid4(),
             email=email,
             name=name,
             hashed_password=hashed_password,
-            is_active=True,
+            is_active=is_active,
+            role=role,
         )
 
 
@@ -50,6 +63,8 @@ async def test_register_hashes_password_and_creates_user(monkeypatch, user_in):
         "name": "Alice",
         # API ніколи не зберігає пароль у відкритому вигляді
         "hashed_password": "hashed::password123",
+        "role": UserRole.student,
+        "is_active": True,
     }
     assert user.email == "alice@example.com"
 

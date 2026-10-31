@@ -15,6 +15,7 @@ async def test_register_returns_201_without_password(client):
     assert body["email"] == "alice@example.com"
     assert body["name"] == "Alice"
     assert body["is_active"] is True
+    assert body["role"] == "student"
     assert "password" not in body
     assert "hashed_password" not in body
 

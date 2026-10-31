@@ -11,6 +11,7 @@ from schemas.schedules import ScheduleCreate, ScheduleUpdate
 from schemas.students import StudentCreate, StudentResponse, StudentUpdate
 from schemas.tasks import TaskCreate, TaskUpdate
 from schemas.teachers import TeacherCreate, TeacherUpdate
+from core.enums import UserRole
 from schemas.tokens import Token
 from schemas.users import UserCreate, UserResponse
 
@@ -40,6 +41,7 @@ class TestUserSchemas:
             name="Alice",
             email="alice@example.com",
             is_active=True,
+            role=UserRole.student,
         )
 
         assert "password" not in response.model_dump()

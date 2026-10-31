@@ -7,8 +7,13 @@ from api.v1.tasks import router as tasks_router
 from api.v1.schedules import router as schedules_router
 from api.v1.users import router as users_router
 from api.v1.auth import router as auth_router
+from api.v1.admin import router as admin_router
 
 router = APIRouter()
+
+router.include_router(
+    admin_router
+)
 
 router.include_router(
     students_router

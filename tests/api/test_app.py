@@ -22,6 +22,8 @@ EXPECTED_PATHS = {
     "/register",
     "/login",
     "/me",
+    "/admin/users",
+    "/admin/users/{user_id}",
 }
 
 

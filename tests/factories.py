@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from core.enums import UserRole
 from core.security import get_password_hash
 from models.courses import Course
 from models.schedules import Schedule
@@ -110,6 +111,7 @@ async def create_user(
     password: str = "secret123",
     is_active: bool = True,
     is_superuser: bool = False,
+    role: UserRole = UserRole.student,
 ) -> User:
     user = User(
         email=email or _unique_email("user"),
@@ -117,6 +119,7 @@ async def create_user(
         hashed_password=get_password_hash(password),
         is_active=is_active,
         is_superuser=is_superuser,
+        role=role,
     )
     db.add(user)
     await db.commit()

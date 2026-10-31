@@ -38,6 +38,7 @@ from sqlalchemy.exc import OperationalError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 from core.database import Base, get_db
+from core.enums import UserRole
 from core.security import create_access_token
 import models  # noqa: F401  (реєструє всі таблиці в Base.metadata)
 from main import app
@@ -173,6 +174,7 @@ async def client(
         name="Test Client",
         hashed_password="not-used-in-tests",
         is_active=True,
+        role=UserRole.admin,
     )
     db_session.add(user)
     await db_session.commit()
