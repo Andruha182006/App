@@ -4,7 +4,7 @@ Backend для навчального процесу: студенти, викл
 
 **Стек:** Python 3.12, FastAPI, SQLAlchemy 2 (async), PostgreSQL 16, Alembic, Pydantic 2, Docker.
 
-**Стан:** 193 тести.
+**Стан:** 199 тестів.
 
 ---
 
@@ -13,6 +13,7 @@ Backend для навчального процесу: студенти, викл
 - CRUD для студентів, викладачів, курсів, завдань і розкладу.
 - Ролі `admin`, `teacher`, `student` і перевірка власності записів.
 - Адміністративне керування користувачами та ролями.
+- Створення студента або викладача разом з акаунтом одним адмінським запитом.
 - Прив’язка акаунта до профілю студента або викладача.
 - Групи студентів і доступ до розкладу своєї групи.
 - Здача завдання студентом і збереження відповіді.
@@ -214,6 +215,47 @@ POST /teachers/
 `teacher` для викладача. Один акаунт можна прив’язати лише до одного профілю
 відповідного типу.
 
+### Створення студента або викладача одним запитом
+
+Щоб не робити два запити вручну, адміністратор може створити акаунт і профіль
+одразу.
+
+Студент:
+
+```http
+POST /admin/students
+{
+  "name": "Alice",
+  "age": 20,
+  "email": "alice@example.com",
+  "group": "KN-21",
+  "password": "password123"
+}
+```
+
+Викладач:
+
+```http
+POST /admin/teachers
+{
+  "name": "Bob",
+  "email": "bob@example.com",
+  "department": "Math",
+  "password": "password123"
+}
+```
+
+Обидва ендпоінти:
+
+- створюють `User` із відповідною роллю та хешем пароля;
+- створюють профіль і прив’язують його через `user_id`;
+- виконують обидва INSERT в одній транзакції — при помилці відкочується все;
+- повертають створений профіль із заповненим `user_id`;
+- повертають `409`, якщо email уже зайнятий акаунтом або профілем.
+
+Старі дворівневі маршрути `POST /admin/users` + `POST /students/` або
+`POST /teachers/` залишаються доступними.
+
 ### Здача завдання
 
 Студент здає лише своє завдання:
@@ -232,6 +274,7 @@ POST /tasks/{task_id}/submit
 | Ресурс | Маршрути |
 |---|---|
 | Admin users | `GET/POST /admin/users`, `PATCH /admin/users/{user_id}` |
+| Admin profiles | `POST /admin/students`, `POST /admin/teachers` |
 | Students | `GET /students/me`; адмін: `GET/POST /students/`, `GET/PATCH/DELETE /students/{id}` |
 | Teachers | `GET /teachers/me`; адмін: `GET/POST /teachers/`, `GET/PATCH/DELETE /teachers/{id}` |
 | Courses | `GET/POST /courses/`, `GET/PATCH/DELETE /courses/{id}` |
@@ -317,7 +360,7 @@ docker compose -f docker-compose.test.yml up -d
 Очікуваний результат:
 
 ```text
-193 passed
+199 passed
 ```
 
 Окремі набори:

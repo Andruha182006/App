@@ -5,10 +5,11 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.enums import UserRole
-from models import Teacher
+from core.security import get_password_hash
+from models import Teacher, User
 from repository.teachers import teacher_rep
 from repository.users import user_repository
-from schemas.teachers import TeacherCreate, TeacherUpdate
+from schemas.teachers import AdminTeacherCreate, TeacherCreate, TeacherUpdate
 from services.base import ServiceBase
 
 
@@ -47,6 +48,46 @@ class TeacherService(ServiceBase[Teacher, TeacherCreate, TeacherUpdate]):
     async def create(self, db: AsyncSession, data: TeacherCreate) -> Teacher:
         await self._validate_user_link(db, data.user_id)
         return await super().create(db, data)
+
+    async def admin_create_with_user(
+        self,
+        db: AsyncSession,
+        data: AdminTeacherCreate,
+    ) -> Teacher:
+        """Create a teacher account and profile in one transaction."""
+        email = str(data.email)
+
+        if await user_repository.get_by_email(db, email=email) is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with this email already exists",
+            )
+        if await self.repository.get_by_email(db, email=email) is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Teacher with this email already exists",
+            )
+
+        user = User(
+            email=email,
+            name=data.name,
+            hashed_password=get_password_hash(data.password),
+            role=UserRole.teacher,
+            is_active=True,
+        )
+        db.add(user)
+        await db.flush()
+
+        teacher = Teacher(
+            name=data.name,
+            department=data.department,
+            email=email,
+            user_id=user.id,
+        )
+        db.add(teacher)
+        await db.commit()
+        await db.refresh(teacher)
+        return teacher
 
     async def update(
         self,

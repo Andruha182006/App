@@ -7,7 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from api.v1.dependencies import require_roles
 from core.database import get_db
 from core.enums import UserRole
+from schemas.students import AdminStudentCreate, StudentResponse
+from schemas.teachers import AdminTeacherCreate, TeacherResponse
 from schemas.users import UserAdminCreate, UserAdminUpdate, UserResponse
+from services.students import student_service
+from services.teachers import teacher_service
 from services.users import user_service
 
 router = APIRouter(
@@ -49,3 +53,27 @@ async def update_user(
         user_id=user_id,
         user_in=data,
     )
+
+
+@router.post(
+    "/students",
+    response_model=StudentResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_student_with_user(
+    data: AdminStudentCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    return await student_service.admin_create_with_user(db, data)
+
+
+@router.post(
+    "/teachers",
+    response_model=TeacherResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_teacher_with_user(
+    data: AdminTeacherCreate,
+    db: AsyncSession = Depends(get_db),
+):
+    return await teacher_service.admin_create_with_user(db, data)

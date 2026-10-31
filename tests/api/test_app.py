@@ -27,6 +27,8 @@ EXPECTED_PATHS = {
     "/me",
     "/admin/users",
     "/admin/users/{user_id}",
+    "/admin/students",
+    "/admin/teachers",
 }
 
 

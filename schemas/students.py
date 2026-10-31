@@ -14,6 +14,14 @@ class StudentCreate(StudentSchema):
     user_id: UUID | None = None
 
 
+class AdminStudentCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=25)
+    age: int = Field(ge=1, le=150)
+    email: EmailStr = Field(max_length=100)
+    group: str | None = Field(default=None, max_length=50)
+    password: str = Field(min_length=8, max_length=128)
+
+
 class StudentUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=25)
     age: int | None = Field(default=None, ge=1, le=150)

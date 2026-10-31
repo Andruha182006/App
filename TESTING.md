@@ -10,7 +10,7 @@ docker compose -f docker-compose.test.yml up -d
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-Очікуваний результат: `193 passed`.
+Очікуваний результат: `199 passed`.
 
 Після роботи:
 

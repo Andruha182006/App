@@ -5,10 +5,11 @@ from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from core.enums import UserRole
-from models import Student
+from core.security import get_password_hash
+from models import Student, User
 from repository.students import student_rep
 from repository.users import user_repository
-from schemas.students import StudentCreate, StudentUpdate
+from schemas.students import AdminStudentCreate, StudentCreate, StudentUpdate
 from services.base import ServiceBase
 
 
@@ -47,6 +48,47 @@ class StudentService(ServiceBase[Student, StudentCreate, StudentUpdate]):
     async def create(self, db: AsyncSession, data: StudentCreate) -> Student:
         await self._validate_user_link(db, data.user_id)
         return await super().create(db, data)
+
+    async def admin_create_with_user(
+        self,
+        db: AsyncSession,
+        data: AdminStudentCreate,
+    ) -> Student:
+        """Create a student account and profile in one transaction."""
+        email = str(data.email)
+
+        if await user_repository.get_by_email(db, email=email) is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="User with this email already exists",
+            )
+        if await self.repository.get_by_email(db, email=email) is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Student with this email already exists",
+            )
+
+        user = User(
+            email=email,
+            name=data.name,
+            hashed_password=get_password_hash(data.password),
+            role=UserRole.student,
+            is_active=True,
+        )
+        db.add(user)
+        await db.flush()
+
+        student = Student(
+            name=data.name,
+            age=data.age,
+            email=email,
+            group=data.group,
+            user_id=user.id,
+        )
+        db.add(student)
+        await db.commit()
+        await db.refresh(student)
+        return student
 
     async def update(
         self,
