@@ -31,6 +31,25 @@ class TaskService(ServiceBase[Task, TaskCreate, TaskUpdate]):
             },
         )
 
+    async def get_filtered(
+        self,
+        db: AsyncSession,
+        *,
+        student_id: int | None = None,
+        teacher_id: int | None = None,
+        title: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[Task]:
+        return await self.repository.get_filtered(
+            db,
+            student_id=student_id,
+            teacher_id=teacher_id,
+            title=title,
+            skip=skip,
+            limit=limit,
+        )
+
     async def get_by_title(
         self,
         db: AsyncSession,

@@ -54,11 +54,8 @@ def require_roles(*roles: UserRole) -> Callable:
     return checker
 
 
-async def get_current_student(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.student)),
-) -> Student:
-    student = await student_rep.get_by_user_id(db, user_id=current_user.id)
+async def load_student_profile(db: AsyncSession, user: User) -> Student:
+    student = await student_rep.get_by_user_id(db, user_id=user.id)
     if student is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
@@ -67,14 +64,25 @@ async def get_current_student(
     return student
 
 
-async def get_current_teacher(
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(require_roles(UserRole.teacher)),
-) -> Teacher:
-    teacher = await teacher_rep.get_by_user_id(db, user_id=current_user.id)
+async def load_teacher_profile(db: AsyncSession, user: User) -> Teacher:
+    teacher = await teacher_rep.get_by_user_id(db, user_id=user.id)
     if teacher is None:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Teacher profile is not linked to this account",
         )
     return teacher
+
+
+async def get_current_student(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.student)),
+) -> Student:
+    return await load_student_profile(db, current_user)
+
+
+async def get_current_teacher(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_roles(UserRole.teacher)),
+) -> Teacher:
+    return await load_teacher_profile(db, current_user)

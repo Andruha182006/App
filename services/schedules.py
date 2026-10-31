@@ -12,6 +12,27 @@ class ScheduleService(ServiceBase[Schedule, ScheduleCreate, ScheduleUpdate]):
     def __init__(self):
         super().__init__(repository=schedule_rep)
 
+    async def get_filtered(
+        self,
+        db: AsyncSession,
+        *,
+        group: str | None = None,
+        room: int | None = None,
+        teacher_id: int | None = None,
+        course_id: int | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[Schedule]:
+        return await self.repository.get_filtered(
+            db,
+            group=group,
+            room=room,
+            teacher_id=teacher_id,
+            course_id=course_id,
+            skip=skip,
+            limit=limit,
+        )
+
     async def get_by_group(
         self,
         db: AsyncSession,

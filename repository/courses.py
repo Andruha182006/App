@@ -24,5 +24,26 @@ class CourseRepository(CRUDBase[Course]):
         result = await db.execute(query)
         return list(result.scalars().all())
 
+    async def get_filtered(
+        self,
+        db: AsyncSession,
+        *,
+        teacher_id: int | None = None,
+        title: str | None = None,
+        credits: int | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[Course]:
+        query = select(self.model)
+        if teacher_id is not None:
+            query = query.where(self.model.teacher_id == teacher_id)
+        if title is not None:
+            query = query.where(self.model.title == title)
+        if credits is not None:
+            query = query.where(self.model.credits == credits)
+        query = query.offset(skip).limit(limit)
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
 course_rep = CourseRepository()
 

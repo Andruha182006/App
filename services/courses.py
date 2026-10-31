@@ -12,6 +12,25 @@ class CourseService(ServiceBase[Course, CoursesCreate, CoursesUpdate]):
     def __init__(self):
         super().__init__(repository=course_rep)
 
+    async def get_filtered(
+        self,
+        db: AsyncSession,
+        *,
+        teacher_id: int | None = None,
+        title: str | None = None,
+        credits: int | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[Course]:
+        return await self.repository.get_filtered(
+            db,
+            teacher_id=teacher_id,
+            title=title,
+            credits=credits,
+            skip=skip,
+            limit=limit,
+        )
+
     async def get_by_title(
         self,
         db: AsyncSession,

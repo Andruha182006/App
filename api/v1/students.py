@@ -3,8 +3,13 @@ from typing import Sequence
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.dependencies import get_current_student, get_current_user
+from api.v1.dependencies import (
+    get_current_student,
+    get_current_user,
+    require_roles,
+)
 from core.database import get_db
+from core.enums import UserRole
 from models.students import Student
 from schemas.students import (
     StudentCreate,
@@ -28,7 +33,11 @@ async def read_my_student_profile(
     return current_student
 
 
-@router.get("/{student_id}", response_model=StudentResponse)
+@router.get(
+    "/{student_id}",
+    response_model=StudentResponse,
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def get_student_by_id(
     student_id: int,
     db: AsyncSession = Depends(get_db),
@@ -36,7 +45,11 @@ async def get_student_by_id(
     return await student_service.get_by_id(db, id=student_id)
 
 
-@router.get("/", response_model=Sequence[StudentResponse])
+@router.get(
+    "/",
+    response_model=Sequence[StudentResponse],
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def read_students(
     filter: StudentFilter = Depends(),
     skip: int = Query(0, ge=0),
@@ -66,6 +79,7 @@ async def read_students(
     "/",
     response_model=StudentResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_roles(UserRole.admin))],
 )
 async def create_student(
     data: StudentCreate,
@@ -74,7 +88,11 @@ async def create_student(
     return await student_service.create(db, data=data)
 
 
-@router.patch("/{student_id}", response_model=StudentResponse)
+@router.patch(
+    "/{student_id}",
+    response_model=StudentResponse,
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def update_student(
     student_id: int,
     data: StudentUpdate,
@@ -83,7 +101,11 @@ async def update_student(
     return await student_service.update(db, id=student_id, data=data)
 
 
-@router.delete("/{student_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{student_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def delete_student(
     student_id: int,
     db: AsyncSession = Depends(get_db),

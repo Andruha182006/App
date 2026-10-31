@@ -29,5 +29,29 @@ class ScheduleRepository(CRUDBase[Schedule]):
         result = await db.execute(query)
         return result.scalars().all()
 
+    async def get_filtered(
+        self,
+        db: AsyncSession,
+        *,
+        group: str | None = None,
+        room: int | None = None,
+        teacher_id: int | None = None,
+        course_id: int | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[Schedule]:
+        query = select(self.model)
+        if group is not None:
+            query = query.where(self.model.group == group)
+        if room is not None:
+            query = query.where(self.model.room == room)
+        if teacher_id is not None:
+            query = query.where(self.model.teacher_id == teacher_id)
+        if course_id is not None:
+            query = query.where(self.model.course_id == course_id)
+        query = query.offset(skip).limit(limit)
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
 schedule_rep = ScheduleRepository()
 

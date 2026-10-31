@@ -3,8 +3,13 @@ from typing import Sequence
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.v1.dependencies import get_current_teacher, get_current_user
+from api.v1.dependencies import (
+    get_current_teacher,
+    get_current_user,
+    require_roles,
+)
 from core.database import get_db
+from core.enums import UserRole
 from models.teachers import Teacher
 from schemas.teachers import (
     TeacherCreate,
@@ -28,7 +33,11 @@ async def read_my_teacher_profile(
     return current_teacher
 
 
-@router.get("/{teacher_id}", response_model=TeacherResponse)
+@router.get(
+    "/{teacher_id}",
+    response_model=TeacherResponse,
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def read_teacher_by_id(
     teacher_id: int,
     db: AsyncSession = Depends(get_db),
@@ -36,7 +45,11 @@ async def read_teacher_by_id(
     return await teacher_service.get_by_id(db, id=teacher_id)
 
 
-@router.get("/", response_model=Sequence[TeacherResponse])
+@router.get(
+    "/",
+    response_model=Sequence[TeacherResponse],
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def read_teacher(
     filter: TeacherFilter = Depends(),
     skip: int = Query(0, ge=0),
@@ -63,6 +76,7 @@ async def read_teacher(
     "/",
     response_model=TeacherResponse,
     status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(require_roles(UserRole.admin))],
 )
 async def create_teacher(
     data: TeacherCreate,
@@ -71,7 +85,11 @@ async def create_teacher(
     return await teacher_service.create(db, data=data)
 
 
-@router.patch("/{teacher_id}", response_model=TeacherResponse)
+@router.patch(
+    "/{teacher_id}",
+    response_model=TeacherResponse,
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def update_teacher(
     teacher_id: int,
     data: TeacherUpdate,
@@ -80,7 +98,11 @@ async def update_teacher(
     return await teacher_service.update(db, id=teacher_id, data=data)
 
 
-@router.delete("/{teacher_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    "/{teacher_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    dependencies=[Depends(require_roles(UserRole.admin))],
+)
 async def delete_teacher(
     teacher_id: int,
     db: AsyncSession = Depends(get_db),

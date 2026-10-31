@@ -24,5 +24,26 @@ class TaskRepository(CRUDBase[Task]):
         result = await db.execute(query)
         return result.scalars().all()
 
+    async def get_filtered(
+        self,
+        db: AsyncSession,
+        *,
+        student_id: int | None = None,
+        teacher_id: int | None = None,
+        title: str | None = None,
+        skip: int = 0,
+        limit: int = 100,
+    ) -> Sequence[Task]:
+        query = select(self.model)
+        if student_id is not None:
+            query = query.where(self.model.student_id == student_id)
+        if teacher_id is not None:
+            query = query.where(self.model.teacher_id == teacher_id)
+        if title is not None:
+            query = query.where(self.model.title == title)
+        query = query.offset(skip).limit(limit)
+        result = await db.execute(query)
+        return list(result.scalars().all())
+
 task_rep = TaskRepository()
 
