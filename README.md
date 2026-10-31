@@ -4,14 +4,19 @@ Backend для навчального процесу: студенти, викл
 
 **Стек:** Python 3.12, FastAPI, SQLAlchemy 2 (async), PostgreSQL 16, Alembic, Pydantic 2, Docker.
 
-**Стан:** 162 тести, покриття 99%.
+**Стан:** 191 тест.
 
 ---
 
 ## Можливості
 
 - CRUD для студентів, викладачів, курсів, завдань і розкладу.
-- Усі CRUD-ендпоінти захищені JWT — потрібен `Authorization: Bearer <token>`.
+- Ролі `admin`, `teacher`, `student` і перевірка власності записів.
+- Адміністративне керування користувачами та ролями.
+- Прив’язка акаунта до профілю студента або викладача.
+- Групи студентів і доступ до розкладу своєї групи.
+- Здача завдання студентом і збереження відповіді.
+- Усі захищені ендпоінти потребують `Authorization: Bearer <token>`.
 - Реєстрація, логін і endpoint `GET /me`.
 - Фільтрація та пагінація (`skip`, `limit`).
 - Валідація вхідних даних через Pydantic.
@@ -46,7 +51,17 @@ python -c "import secrets; print(secrets.token_urlsafe(64))"
 docker compose up -d --build
 ```
 
-4. Перевірте стан:
+4. Створіть першого адміністратора:
+
+```powershell
+docker compose exec api python scripts/create_admin.py `
+  --email admin@example.com --name Administrator
+```
+
+Скрипт попросить пароль. Якщо користувач з таким email уже існує, він буде
+підвищений до `admin` і активований.
+
+5. Перевірте стан:
 
 ```powershell
 docker compose ps
@@ -95,6 +110,8 @@ pip install -r requirements.txt
 ```powershell
 Copy-Item .env.example .env
 alembic upgrade head
+.\.venv\Scripts\python.exe scripts\create_admin.py `
+  --email admin@example.com --name Administrator
 uvicorn main:app --reload
 ```
 
@@ -149,14 +166,76 @@ curl -X POST http://localhost:8000/login \
 Authorization: Bearer <access_token>
 ```
 
+### Ролі та доступи
+
+Публічний `/register` завжди створює користувача з роллю `student`. Роль
+зберігається в БД і перевіряється на кожному запиті; даним із JWT про роль не
+довіряємо.
+
+| Дія | `admin` | `teacher` | `student` |
+|---|---|---|---|
+| Керування користувачами | повне | — | — |
+| Студенти | повний CRUD | — | свій профіль `/students/me` |
+| Викладачі | повний CRUD | свій профіль `/teachers/me` | — |
+| Курси | повний CRUD | CRUD лише своїх | лише читання |
+| Завдання | повний CRUD | CRUD лише своїх | лише свої та здача |
+| Розклад | повний CRUD | лише свій | лише своєї групи |
+
+Списки курсів, завдань і розкладу автоматично звужуються до дозволених
+записів. Спроба звернутися до чужого запису повертає `403`.
+
+### Прив’язка профілю
+
+Щоб студент або викладач міг користуватися `/students/me` чи `/teachers/me`,
+акаунт потрібно прив’язати до профілю. Це робить адміністратор:
+
+```http
+POST /students/
+{
+  "name": "Alice",
+  "age": 20,
+  "email": "alice@example.com",
+  "group": "KN-21",
+  "user_id": "<UUID користувача>"
+}
+```
+
+```http
+POST /teachers/
+{
+  "name": "Bob",
+  "email": "bob@example.com",
+  "department": "Math",
+  "user_id": "<UUID користувача>"
+}
+```
+
+Роль акаунта має відповідати типу профілю: `student` для студента,
+`teacher` для викладача. Один акаунт можна прив’язати лише до одного профілю
+відповідного типу.
+
+### Здача завдання
+
+Студент здає лише своє завдання:
+
+```http
+POST /tasks/{task_id}/submit
+{
+  "answer": "Текст відповіді"
+}
+```
+
+Після здачі `status` стає `submitted`, а `submitted_at` заповнюється.
+
 ### Ресурси
 
 | Ресурс | Маршрути |
 |---|---|
-| Students | `GET/POST /students/`, `GET/PATCH/DELETE /students/{id}` |
-| Teachers | `GET/POST /teachers/`, `GET/PATCH/DELETE /teachers/{id}` |
+| Admin users | `GET/POST /admin/users`, `PATCH /admin/users/{user_id}` |
+| Students | `GET /students/me`; адмін: `GET/POST /students/`, `GET/PATCH/DELETE /students/{id}` |
+| Teachers | `GET /teachers/me`; адмін: `GET/POST /teachers/`, `GET/PATCH/DELETE /teachers/{id}` |
 | Courses | `GET/POST /courses/`, `GET/PATCH/DELETE /courses/{id}` |
-| Tasks | `GET/POST /tasks/`, `GET/PATCH/DELETE /tasks/{id}` |
+| Tasks | `GET/POST /tasks/`, `GET/PATCH/DELETE /tasks/{id}`, `POST /tasks/{id}/submit` |
 | Schedules | `GET/POST /schedules/`, `GET/PATCH/DELETE /schedules/{id}` |
 
 ### Фільтри та пагінація
@@ -175,9 +254,10 @@ GET /students/?skip=0&limit=20
 ### Помилки
 
 - `401` — немає токена або токен недійсний.
+- `403` — роль не має доступу або запис належить іншому користувачу.
 - `404` — запис за id не знайдено.
-- `409` — дублікат унікального поля, неіснуючий FK або спроба видалити запис,
-  на який посилаються інші дані.
+- `409` — дублікат унікального поля, неіснуючий FK, невідповідна роль
+  профілю або спроба видалити запис, на який посилаються інші дані.
 - `422` — некоректні вхідні дані або параметри пагінації.
 
 Видалення не робить каскад: якщо на запис є посилання, спочатку видаліть або
@@ -195,6 +275,7 @@ app/
 ├── repository/      # доступ до даних
 ├── schemas/         # Pydantic-схеми
 ├── services/        # бізнес-логіка
+├── scripts/         # службові команди (створення адміна)
 ├── alembic/         # міграції
 ├── tests/           # unit та API тести
 ├── main.py          # точка входу FastAPI
@@ -236,7 +317,7 @@ docker compose -f docker-compose.test.yml up -d
 Очікуваний результат:
 
 ```text
-162 passed
+191 passed
 ```
 
 Окремі набори:
@@ -269,7 +350,9 @@ docker compose -f docker-compose.test.yml down
 
 - Паролі зберігаються у вигляді Argon2-хешу.
 - JWT підписується `SECRET_KEY` і містить `sub` та `exp`.
-- Усі CRUD-роутери перевіряють підпис, термін дії токена й активність користувача.
+- Усі захищені роутери перевіряють підпис, термін дії токена й активність користувача.
+- Роль береться з БД, а не з токена; для кожного запиту перевіряються роль і власність.
+- Публічна реєстрація не дозволяє самостійно обрати роль.
 - Вхідні дані перевіряються Pydantic.
 - SQL-логування вимкнене за замовчуванням.
 - Docker-контейнер API працює не від root.
@@ -280,7 +363,6 @@ docker compose -f docker-compose.test.yml down
 
 ## Що можна додати далі
 
-- Ролі користувачів (`is_superuser`, викладач, студент).
 - CI з автоматичним запуском тестів.
 - Перевірку міграцій Alembic у тестах.
 - Окремий `requirements-dev.txt`, щоб не ставити тестові залежності в production-образ.

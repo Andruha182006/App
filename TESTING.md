@@ -10,7 +10,7 @@ docker compose -f docker-compose.test.yml up -d
 .\.venv\Scripts\python.exe -m pytest
 ```
 
-Очікуваний результат: `162 passed`, покриття ~99%.
+Очікуваний результат: `191 passed`.
 
 Після роботи:
 
