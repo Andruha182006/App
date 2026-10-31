@@ -59,6 +59,48 @@ class UserService:
             is_active=user_in.is_active,
         )
 
+    async def create_or_promote_admin(
+        self,
+        db: AsyncSession,
+        *,
+        email: str,
+        name: str,
+        password: str,
+    ) -> tuple[User, bool]:
+        """Create an admin or promote an existing user to admin.
+
+        Returns the user and a flag indicating whether the user was created.
+        """
+        admin_in = UserAdminCreate(
+            name=name,
+            email=email,
+            password=password,
+            role=UserRole.admin,
+            is_active=True,
+        )
+        existing = await self.repo.get_by_email(db, email=str(admin_in.email))
+
+        if existing is not None:
+            user = await self.repo.update(
+                db,
+                user=existing,
+                update_data={
+                    "role": UserRole.admin,
+                    "is_active": True,
+                },
+            )
+            return user, False
+
+        user = await self.repo.create(
+            db,
+            email=str(admin_in.email),
+            name=admin_in.name,
+            hashed_password=get_password_hash(admin_in.password),
+            role=UserRole.admin,
+            is_active=True,
+        )
+        return user, True
+
     async def admin_update_user(
         self,
         db: AsyncSession,

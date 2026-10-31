@@ -4,7 +4,7 @@ Backend для навчального процесу: студенти, викл
 
 **Стек:** Python 3.12, FastAPI, SQLAlchemy 2 (async), PostgreSQL 16, Alembic, Pydantic 2, Docker.
 
-**Стан:** 191 тест.
+**Стан:** 193 тести.
 
 ---
 
@@ -317,7 +317,7 @@ docker compose -f docker-compose.test.yml up -d
 Очікуваний результат:
 
 ```text
-191 passed
+193 passed
 ```
 
 Окремі набори:

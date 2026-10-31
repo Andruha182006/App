@@ -15,9 +15,16 @@ class FakeUserRepository:
     def __init__(self, existing: User | None = None):
         self.existing = existing
         self.created_with: dict | None = None
+        self.updated_with: dict | None = None
 
     async def get_by_email(self, db, email: str):
         return self.existing
+
+    async def update(self, db, *, user: User, update_data: dict) -> User:
+        self.updated_with = update_data
+        for field, value in update_data.items():
+            setattr(user, field, value)
+        return user
 
     async def create(
         self,
@@ -81,6 +88,59 @@ async def test_register_duplicate_email_raises_400(user_in):
     assert exc_info.value.status_code == 400
     assert "already exists" in exc_info.value.detail
     assert repo.created_with is None
+
+
+async def test_create_or_promote_admin_creates_new_admin(monkeypatch):
+    monkeypatch.setattr(
+        "services.users.get_password_hash",
+        lambda pwd: f"hashed::{pwd}",
+    )
+    repo = FakeUserRepository()
+    service = UserService(repo)
+
+    user, created = await service.create_or_promote_admin(
+        object(),
+        email="admin@example.com",
+        name="Administrator",
+        password="password123",
+    )
+
+    assert created is True
+    assert repo.created_with == {
+        "email": "admin@example.com",
+        "name": "Administrator",
+        "hashed_password": "hashed::password123",
+        "role": UserRole.admin,
+        "is_active": True,
+    }
+    assert user.role == UserRole.admin
+
+
+async def test_create_or_promote_admin_promotes_existing_user():
+    existing = User(
+        id=uuid4(),
+        email="admin@example.com",
+        hashed_password="existing-hash",
+        is_active=False,
+        role=UserRole.student,
+    )
+    repo = FakeUserRepository(existing=existing)
+    service = UserService(repo)
+
+    user, created = await service.create_or_promote_admin(
+        object(),
+        email="admin@example.com",
+        name="Administrator",
+        password="password123",
+    )
+
+    assert created is False
+    assert repo.updated_with == {
+        "role": UserRole.admin,
+        "is_active": True,
+    }
+    assert user.role == UserRole.admin
+    assert user.is_active is True
 
 
 async def test_authenticate_returns_token(monkeypatch, user_in):
